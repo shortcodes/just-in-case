@@ -55,7 +55,6 @@
 | `status` | ENUM('draft', 'active', 'completed') | NOT NULL, DEFAULT 'draft' | Status powiernictwa |
 | `delivery_status` | ENUM('pending', 'sent', 'delivered', 'failed', 'bounced') | NULL | Status dostarczenia wiadomości |
 | `interval` | VARCHAR(20) | NOT NULL | Interwał w formacie ISO 8601 |
-| `interval_in_minutes` | INT UNSIGNED | NOT NULL | Interwał w minutach |
 | `last_reset_at` | TIMESTAMP | NULL | Timestamp ostatniego resetu timera |
 | `next_trigger_at` | TIMESTAMP | NULL | Timestamp wygaśnięcia timera |
 | `activated_at` | TIMESTAMP | NULL | Timestamp aktywacji |
@@ -80,7 +79,7 @@
 |---------|-----|--------------|------|
 | `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Unikalny identyfikator |
 | `custodianship_id` | BIGINT UNSIGNED | NOT NULL, UNIQUE, FK → custodianships(id) ON DELETE CASCADE | Powiernictwo (relacja 1:1) |
-| `message_content` | TEXT | NOT NULL | Zaszyfrowana treść wiadomości |
+| `content` | TEXT | NOT NULL | Zaszyfrowana treść wiadomości |
 | `created_at` | TIMESTAMP | NOT NULL | Data utworzenia |
 | `updated_at` | TIMESTAMP | NOT NULL | Data ostatniej aktualizacji |
 
@@ -154,7 +153,7 @@ Struktura Spatie laravel-medialibrary.
 | `recipient_id` | BIGINT UNSIGNED | NOT NULL, FK → recipients(id) ON DELETE CASCADE | Odbiorca |
 | `recipient_email` | VARCHAR(255) | NOT NULL | Snapshot emaila odbiorcy |
 | `mailgun_message_id` | VARCHAR(255) | NULL | Message ID z Mailgun |
-| `final_status` | ENUM('pending', 'delivered', 'failed', 'bounced') | NOT NULL, DEFAULT 'pending' | Finalny status dostarczenia |
+| `status` | ENUM('pending', 'delivered', 'failed') | NOT NULL, DEFAULT 'pending' | Finalny status dostarczenia |
 | `delivered_at` | TIMESTAMP | NULL | Timestamp dostarczenia |
 | `created_at` | TIMESTAMP | NOT NULL | Timestamp pierwszej próby |
 | `updated_at` | TIMESTAMP | NOT NULL | Timestamp ostatniej aktualizacji |
@@ -170,27 +169,7 @@ Struktura Spatie laravel-medialibrary.
 
 ---
 
-### 1.8 Tabela `delivery_attempts`
-
-| Kolumna | Typ | Ograniczenia | Opis |
-|---------|-----|--------------|------|
-| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Unikalny identyfikator |
-| `delivery_id` | BIGINT UNSIGNED | NOT NULL, FK → deliveries(id) ON DELETE CASCADE | Delivery |
-| `attempt_number` | TINYINT | NOT NULL | Numer próby (1-3) |
-| `status` | ENUM('sent', 'failed', 'bounced') | NOT NULL | Status próby |
-| `error_message` | TEXT | NULL | Komunikat błędu |
-| `attempted_at` | TIMESTAMP | NOT NULL | Timestamp próby |
-
-**Indeksy:**
-- PRIMARY KEY: `id`
-- **COMPOSITE INDEX**: `(delivery_id, attempt_number)`
-
-**Foreign Keys:**
-- `delivery_id` REFERENCES `deliveries(id)` ON DELETE CASCADE
-
----
-
-### 1.9 Tabela `resets`
+### 1.8 Tabela `resets`
 
 | Kolumna | Typ | Ograniczenia | Opis |
 |---------|-----|--------------|------|
@@ -213,7 +192,7 @@ Struktura Spatie laravel-medialibrary.
 
 ---
 
-### 1.10 Tabela `downloads`
+### 1.9 Tabela `downloads`
 
 | Kolumna | Typ | Ograniczenia | Opis |
 |---------|-----|--------------|------|
@@ -235,7 +214,7 @@ Struktura Spatie laravel-medialibrary.
 
 ---
 
-### 1.11 Tabela `notifications`
+### 1.10 Tabela `notifications`
 
 Standardowa tabela Laravel notifications.
 
@@ -292,7 +271,6 @@ classDiagram
         +ENUM status
         +ENUM delivery_status
         +VARCHAR(20) interval
-        +INT interval_in_minutes
         +TIMESTAMP last_reset_at
         +TIMESTAMP next_trigger_at
         +TIMESTAMP activated_at
@@ -308,7 +286,7 @@ classDiagram
     class custodianship_messages {
         +BIGINT id PK
         +BIGINT custodianship_id FK UK
-        +TEXT message_content
+        +TEXT content
         +TIMESTAMP created_at
         +TIMESTAMP updated_at
         --
@@ -351,24 +329,13 @@ classDiagram
         +BIGINT recipient_id FK
         +VARCHAR(255) recipient_email
         +VARCHAR(255) mailgun_message_id
-        +ENUM final_status
+        +ENUM status
         +TIMESTAMP delivered_at
         +TIMESTAMP created_at
         +TIMESTAMP updated_at
         --
         INDEX: mailgun_message_id
         COMPOSITE: (custodianship_id, recipient_id, final_status)
-    }
-
-    class delivery_attempts {
-        +BIGINT id PK
-        +BIGINT delivery_id FK
-        +TINYINT attempt_number
-        +ENUM status
-        +TEXT error_message
-        +TIMESTAMP attempted_at
-        --
-        COMPOSITE: (delivery_id, attempt_number)
     }
 
     class resets {
@@ -422,8 +389,6 @@ classDiagram
     custodianships "1" --> "0..*" downloads : logs
 
     recipients "1" --> "0..*" deliveries : receives
-
-    deliveries "1" --> "0..*" delivery_attempts : has
 
     media "1" --> "0..*" downloads : tracks
 ```

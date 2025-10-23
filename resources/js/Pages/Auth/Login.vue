@@ -1,100 +1,133 @@
-<script setup>
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import ApplicationLogo from '@/Components/ApplicationLogo.vue'
+import type { LoginFormData, LoginPageProps } from '@/types/auth'
 
-defineProps({
-    canResetPassword: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
-});
+const props = defineProps<LoginPageProps>()
 
-const form = useForm({
+const form = useForm<LoginFormData>({
     email: '',
     password: '',
     remember: false,
-});
+})
 
-const submit = () => {
+const submit = (): void => {
     form.post(route('login'), {
         onFinish: () => form.reset('password'),
-    });
-};
+    })
+}
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Log in" />
+    <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+    <div class="w-full lg:grid lg:min-h-[600px] lg:grid-cols-1 xl:min-h-[800px]">
+        <div class="flex items-center justify-center py-12">
+            <div class="mx-auto grid w-full max-w-[350px] gap-6 px-4">
+                <div class="flex justify-center">
+                    <ApplicationLogo class="h-48 w-48 fill-current text-foreground" />
+                </div>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+                <div
+                    v-if="status"
+                    class="rounded-lg bg-green-50 p-4 text-sm text-green-800 border border-green-200"
+                >
+                    {{ status }}
+                </div>
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
+                <div class="grid gap-2 text-center">
+                    <h1 class="text-3xl font-bold">
+                        Sign in
+                    </h1>
+                    <p class="text-balance text-muted-foreground">
+                        Enter your email below to sign in to your account
+                    </p>
+                </div>
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+                <form @submit.prevent="submit">
+                    <div class="grid gap-4">
+                        <div class="grid gap-2">
+                            <Label for="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                v-model="form.email"
+                                placeholder="Enter your email"
+                                required
+                                autofocus
+                                autocomplete="email"
+                                :disabled="form.processing"
+                            />
+                            <p v-if="form.errors.email" class="text-sm font-medium text-destructive">
+                                {{ form.errors.email }}
+                            </p>
+                        </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                        <div class="grid gap-2">
+                            <div class="flex items-center">
+                                <Label for="password">Password</Label>
+                                <Link
+                                    v-if="canResetPassword"
+                                    :href="route('password.request')"
+                                    class="ml-auto inline-block text-sm underline"
+                                >
+                                    Forgot your password?
+                                </Link>
+                            </div>
+                            <Input
+                                id="password"
+                                type="password"
+                                v-model="form.password"
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                                :disabled="form.processing"
+                            />
+                            <p v-if="form.errors.password" class="text-sm font-medium text-destructive">
+                                {{ form.errors.password }}
+                            </p>
+                        </div>
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
+                        <div class="flex items-center space-x-2">
+                            <Checkbox
+                                id="remember"
+                                :checked="form.remember"
+                                @update:checked="form.remember = $event"
+                            />
+                            <Label
+                                for="remember"
+                                class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                                Remember me
+                            </Label>
+                        </div>
 
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+                        <Button
+                            type="submit"
+                            variant="default"
+                            class="w-full"
+                            :disabled="form.processing"
+                        >
+                            <span v-if="form.processing">Signing in...</span>
+                            <span v-else>Sign in</span>
+                        </Button>
+                    </div>
+                </form>
 
-            <div class="mt-4 block">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600"
-                        >Remember me</span
+                <div class="mt-4 text-center text-sm">
+                    Don't have an account?
+                    <Link
+                        :href="route('register')"
+                        class="underline"
                     >
-                </label>
+                        Sign up
+                    </Link>
+                </div>
             </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    Forgot your password?
-                </Link>
-
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Log in
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
+        </div>
+    </div>
 </template>

@@ -1,0 +1,91 @@
+<?php
+
+return [
+    'title' => 'Just In Case - Zabezpiecz dostęp do kluczowych informacji',
+    'app_name' => 'Just In Case',
+    'login' => 'Zaloguj się',
+    'register' => 'Załóż konto',
+
+    'hero' => [
+        'disclaimer' => 'To nie jest testament prawny, tylko automatyczny system dostarczania wiadomości',
+        'heading' => 'Zabezpiecz dostęp do <span class="text-indigo-600">kluczowych informacji</span>',
+        'subheading' => 'Automatyczny system dostarczania wiadomości w przypadku śmierci, wypadku lub zaginięcia. Przekaż hasła, dokumenty i ostatnie życzenia wybranym osobom – bezpiecznie i automatycznie.',
+        'cta_primary' => 'Załóż bezpłatne konto',
+        'cta_secondary' => 'Jak to działa?',
+    ],
+
+    'how_it_works' => [
+        'badge' => 'Prosty proces',
+        'title' => 'Jak to działa?',
+        'description' => 'Zautomatyzowany sposób na przekazanie kluczowych informacji Twoim bliskim w przypadku nieprzewidzianych sytuacji',
+
+        'step1_title' => 'Utwórz powiernictwo',
+        'step1_description' => 'Napisz wiadomość, dodaj załączniki (do 10MB) i wybierz odbiorców. Określ interwał czasowy, po którym wiadomość zostanie wysłana (np. 90 dni).',
+
+        'step2_title' => 'Resetuj timer regularnie',
+        'step2_description' => 'Potwierdzaj jednym kliknięciem, że wszystko w porządku. System wyśle przypomnienie zanim timer wygaśnie, dając Ci czas na reakcję.',
+
+        'step3_title' => 'Automatyczna wysyłka',
+        'step3_description' => 'Jeśli przestaniesz resetować timer, system automatycznie wyśle zaszyfrowaną wiadomość z załącznikami do wybranych odbiorców.',
+
+        'step4_title' => 'Zacznij teraz',
+        'step4_description' => 'Konfiguracja zajmie mniej niż 5 minut. Załóż bezpłatne konto i zabezpiecz informacje już dziś.',
+        'step4_cta' => 'Załóż konto',
+    ],
+
+    'problem_solution' => [
+        'title' => 'Problem, który rozwiązujemy',
+        'description' => 'W przypadku śmierci, wypadku lub zaginięcia, bliskie osoby często nie mają dostępu do kluczowych informacji',
+
+        'simple_title' => 'Proste',
+        'simple_description' => 'Bez prawników, bez skomplikowanych procedur',
+
+        'automatic_title' => 'Automatyczne',
+        'automatic_description' => 'System działa bez Twojej ingerencji',
+
+        'secure_title' => 'Bezpieczne',
+        'secure_description' => 'Szyfrowanie danych i załączników',
+
+        'fast_title' => 'Szybkie',
+        'fast_description' => 'Konfiguracja poniżej 5 minut',
+    ],
+
+    'for_whom' => [
+        'title' => 'Dla kogo jest Just In Case?',
+        'description' => 'Idealny dla każdego, kto chce zabezpieczyć dostęp do ważnych informacji dla swoich bliskich – od freelancerów z aktywami cyfrowymi po rodziców dbających o przyszłość rodziny.',
+        'cta_primary' => 'Załóż konto teraz',
+        'cta_secondary' => 'Jak to działa?',
+    ],
+
+    'pricing' => [
+        'title' => 'Zacznij bezpłatnie',
+        'description' => 'Plan darmowy z wszystkimi kluczowymi funkcjami',
+
+        'plan_name' => 'Plan Free',
+        'plan_badge' => 'Najpopularniejszy',
+        'plan_price' => '0 zł',
+        'plan_currency' => '',
+        'plan_period' => 'Na zawsze bezpłatny',
+        'plan_cta' => 'Załóż konto teraz',
+
+        'feature_trusts' => 'Aż <strong class="font-semibold text-slate-900">3 powiernictwa</strong>',
+        'feature_attachments' => 'Do <strong class="font-semibold text-slate-900">10MB załączników</strong> na powiernictwo',
+        'feature_recipients' => 'Do <strong class="font-semibold text-slate-900">2 odbiorców</strong> na powiernictwo',
+        'feature_encryption' => '<strong class="font-semibold text-slate-900">Szyfrowanie</strong> danych at-rest',
+        'feature_delivery' => '<strong class="font-semibold text-slate-900">Automatyczna wysyłka</strong> wiadomości',
+        'feature_reminders' => '<strong class="font-semibold text-slate-900">Przypomnienia</strong> email przed wygaśnięciem',
+    ],
+
+    'final_cta' => [
+        'title' => 'Gotowy, aby zabezpieczyć swoje informacje?',
+        'description' => 'Dołącz do osób, które zadbały o przyszłość swoich bliskich. Konfiguracja zajmie mniej niż 5 minut.',
+        'cta' => 'Załóż bezpłatne konto',
+    ],
+
+    'footer' => [
+        'copyright' => '© 2025 Just In Case. Wszystkie prawa zastrzeżone.',
+        'privacy' => 'Polityka prywatności',
+        'terms' => 'Regulamin',
+        'disclaimer' => 'Just In Case to automatyczny system dostarczania wiadomości. Nie jest testamentem ani usługą prawną.',
+    ],
+];

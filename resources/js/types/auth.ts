@@ -33,3 +33,10 @@ export interface RegisterFormData {
   /** Password confirmation */
   password_confirmation: string
 }
+
+/**
+ * Page props for the Register view (passed from Inertia)
+ */
+export interface RegisterPageProps {
+  // Brak dodatkowych props - używamy tylko globalnych shared props
+}

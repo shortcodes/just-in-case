@@ -8,6 +8,7 @@ import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { parseIntervalToDays } from './useInterval'
 
 dayjs.extend(duration)
 dayjs.extend(relativeTime)
@@ -25,8 +26,9 @@ export interface UseTimerCountdownReturn {
 
 export function useTimerCountdown(
     nextTriggerAt: string | null,
-    intervalDays: number,
+    interval: string,
 ): UseTimerCountdownReturn {
+    const intervalDays = parseIntervalToDays(interval)
     const now = ref(dayjs())
     let intervalId: number | null = null
     let isVisible = ref(true)

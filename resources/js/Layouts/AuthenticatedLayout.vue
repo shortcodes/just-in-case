@@ -13,7 +13,7 @@ const user = computed(() => page.props.auth?.user || {
 })
 
 const navigation = computed(() => [
-    { name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard') },
+    { name: 'Custodianships', href: route('custodianships.index'), current: route().current('custodianships.*') },
 ])
 
 const userNavigation = computed(() => [
@@ -36,7 +36,7 @@ const logout = () => {
                 <div class="flex h-16 justify-between">
                     <div class="flex">
                         <div class="flex shrink-0 items-center">
-                            <Link :href="route('dashboard')">
+                            <Link :href="route('custodianships.index')">
                                 <ApplicationLogo class="h-9 w-auto fill-current text-gray-800" />
                             </Link>
                         </div>

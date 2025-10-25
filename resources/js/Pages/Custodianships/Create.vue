@@ -12,24 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import StorageIndicator from '@/Components/StorageIndicator.vue'
 import type { CreateCustodianshipPageProps, TempAttachment, CreateCustodianshipFormData } from '@/types/models'
-import { mockIntervals } from '@/data/mockIntervals'
 
-const mockUser = {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    emailVerified: false,
-    emailVerifiedAt: null,
-    createdAt: new Date().toISOString(),
-}
-
-const props: CreateCustodianshipPageProps = {
-    user: mockUser,
-    intervals: mockIntervals,
-}
+const props = defineProps<CreateCustodianshipPageProps>()
 
 const breadcrumbs = [
-    { label: 'Home', href: '/dashboard' },
     { label: 'Custodianships', href: '/custodianships' },
     { label: 'Create New' },
 ]

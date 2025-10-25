@@ -34,15 +34,16 @@ export interface CustodianshipViewModel {
     uuid: string
     name: string
     status: CustodianshipStatus
-    deliveryStatus: DeliveryStatus
     interval: string
-    intervalDays: number
     lastResetAt: string | null
     nextTriggerAt: string | null
     activatedAt: string | null
-    recipients: RecipientViewModel[]
-    messageContent: string | null
-    attachments: AttachmentViewModel[]
+    deliveryStatus?: 'delivered' | 'failed' | 'bounced' | null
+    recipientsCount?: number
+    attachmentsCount?: number
+    recipients?: RecipientViewModel[]
+    messageContent?: string | null
+    attachments?: AttachmentViewModel[]
     createdAt: string
     updatedAt: string
 }
@@ -59,7 +60,7 @@ export interface DashboardStatsViewModel {
 export interface CustodianshipsIndexPageProps {
     user: UserViewModel
     custodianships: CustodianshipViewModel[]
-    stats: DashboardStatsViewModel
+    stats?: DashboardStatsViewModel
 }
 
 /**
@@ -92,4 +93,32 @@ export interface CreateCustodianshipFormData {
 export interface CreateCustodianshipPageProps {
     user: UserViewModel
     intervals: IntervalOption[]
+}
+
+/**
+ * Types for Show Custodianship View
+ */
+
+export type ResetMethod = 'manual_button' | 'post_edit_modal'
+
+export interface CustodianshipDetailViewModel extends CustodianshipViewModel {
+    user: {
+        id: number
+        name: string
+    }
+    resetCount?: number
+}
+
+export interface ResetLogViewModel {
+    id: number
+    resetMethod: ResetMethod
+    ipAddress: string
+    userAgent: string
+    createdAt: string
+}
+
+export interface ShowCustodianshipPageProps {
+    user: UserViewModel
+    custodianship: CustodianshipDetailViewModel
+    resetHistory?: ResetLogViewModel[]
 }

@@ -2,7 +2,15 @@
  * Mock Data for Custodianships Index Development
  */
 
-import type { UserViewModel, CustodianshipViewModel, DashboardStatsViewModel, CustodianshipsIndexPageProps } from '@/types/models'
+import type {
+    UserViewModel,
+    CustodianshipViewModel,
+    DashboardStatsViewModel,
+    CustodianshipsIndexPageProps,
+    CustodianshipDetailViewModel,
+    ResetLogViewModel,
+    ShowCustodianshipPageProps
+} from '@/types/models'
 import dayjs from 'dayjs'
 
 export const mockUser: UserViewModel = {
@@ -125,4 +133,47 @@ export const mockCustodianshipsIndexPageProps: CustodianshipsIndexPageProps = {
     user: mockUser,
     custodianships: mockCustodianships,
     stats: mockStats,
+}
+
+/**
+ * Mock Data for Show Custodianship View
+ */
+
+export const mockCustodianshipDetail: CustodianshipDetailViewModel = {
+    ...mockCustodianships[0], // Active custodianship with expired timer
+    user: {
+        id: 1,
+        name: 'John Doe',
+    },
+    resetCount: 15,
+}
+
+export const mockResetHistory: ResetLogViewModel[] = [
+    {
+        id: 1,
+        resetMethod: 'manual_button',
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        createdAt: dayjs().subtract(2, 'days').toISOString(),
+    },
+    {
+        id: 2,
+        resetMethod: 'post_edit_modal',
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        createdAt: dayjs().subtract(10, 'days').toISOString(),
+    },
+    {
+        id: 3,
+        resetMethod: 'manual_button',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X)',
+        createdAt: dayjs().subtract(25, 'days').toISOString(),
+    },
+]
+
+export const mockShowPageProps: ShowCustodianshipPageProps = {
+    user: mockUser,
+    custodianship: mockCustodianshipDetail,
+    resetHistory: mockResetHistory,
 }

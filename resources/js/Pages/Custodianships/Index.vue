@@ -10,14 +10,10 @@ import ExpiringCustodianshipsBanner from '@/Components/ExpiringCustodianshipsBan
 import CustodianshipCard from '@/Components/CustodianshipCard.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 import type { CustodianshipsIndexPageProps } from '@/types/models'
+import { parseIntervalToDays } from '@/composables/useInterval'
 import dayjs from 'dayjs'
 
-// Use mock data for development
-import { mockCustodianshipsIndexPageProps } from '@/data/mockCustodianships'
-
-// In production, props would come from Inertia
-// const props = defineProps<CustodianshipsIndexPageProps>()
-const props = mockCustodianshipsIndexPageProps
+const props = defineProps<CustodianshipsIndexPageProps>()
 
 // Local state
 const isResetting = ref<Record<number, boolean>>({})
@@ -29,7 +25,7 @@ const showEmailBanner = computed(() => {
 })
 
 const showExpiringBanner = computed(() => {
-    return props.stats.expiringCount > 0
+    return props.stats?.expiringCount && props.stats.expiringCount > 0
 })
 
 const isEmpty = computed(() => {
@@ -45,28 +41,6 @@ const expiringCustodianships = computed(() => {
         if (!c.nextTriggerAt || c.status !== 'active') return false
         const daysRemaining = dayjs(c.nextTriggerAt).diff(dayjs(), 'day', true)
         return daysRemaining < 7 && daysRemaining > 0
-    })
-})
-
-const sortedCustodianships = computed(() => {
-    const sorted = [...props.custodianships]
-    return sorted.sort((a, b) => {
-        // Drafts last
-        if (a.status === 'draft' && b.status !== 'draft') return 1
-        if (b.status === 'draft' && a.status !== 'draft') return -1
-
-        // Completed/failed last
-        if ((a.status === 'completed' || a.deliveryStatus === 'failed') &&
-            (b.status !== 'completed' && b.deliveryStatus !== 'failed')) return 1
-        if ((b.status === 'completed' || b.deliveryStatus === 'failed') &&
-            (a.status !== 'completed' && a.deliveryStatus !== 'failed')) return -1
-
-        // Active by nextTriggerAt ASC (closest expiration first)
-        if (a.nextTriggerAt && b.nextTriggerAt) {
-            return new Date(a.nextTriggerAt).getTime() - new Date(b.nextTriggerAt).getTime()
-        }
-
-        return 0
     })
 })
 
@@ -88,7 +62,8 @@ const handleReset = (custodianshipId: number) => {
     const custodianship = props.custodianships.find(c => c.id === custodianshipId)
     if (custodianship) {
         custodianship.lastResetAt = dayjs().toISOString()
-        custodianship.nextTriggerAt = dayjs().add(custodianship.intervalDays, 'day').toISOString()
+        const intervalDays = parseIntervalToDays(custodianship.interval)
+        custodianship.nextTriggerAt = dayjs().add(intervalDays, 'day').toISOString()
     }
 
     // In production, this would be a POST request
@@ -151,7 +126,8 @@ const handleActivate = (custodianshipId: number) => {
         custodianship.status = 'active'
         custodianship.activatedAt = dayjs().toISOString()
         custodianship.lastResetAt = dayjs().toISOString()
-        custodianship.nextTriggerAt = dayjs().add(custodianship.intervalDays, 'day').toISOString()
+        const intervalDays = parseIntervalToDays(custodianship.interval)
+        custodianship.nextTriggerAt = dayjs().add(intervalDays, 'day').toISOString()
     }
 }
 </script>
@@ -163,7 +139,6 @@ const handleActivate = (custodianshipId: number) => {
         <!-- Breadcrumbs -->
         <Breadcrumbs
             :items="[
-                { label: 'Home', href: route('dashboard') },
                 { label: 'Custodianships' }
             ]"
         />
@@ -173,14 +148,6 @@ const handleActivate = (custodianshipId: number) => {
 <!--            v-if="showEmailBanner"-->
 <!--            :user-email="props.user.email"-->
 <!--            @resend="handleResendVerification"-->
-<!--        />-->
-
-<!--        &lt;!&ndash; Expiring Custodianships Banner &ndash;&gt;-->
-<!--        <ExpiringCustodianshipsBanner-->
-<!--            v-if="showExpiringBanner"-->
-<!--            :expiring-count="props.stats.expiringCount"-->
-<!--            :expiring-custodianships="expiringCustodianships"-->
-<!--            @reset-all="handleResetAll"-->
 <!--        />-->
 
         <!-- Header -->
@@ -230,7 +197,7 @@ const handleActivate = (custodianshipId: number) => {
             class="space-y-4"
         >
             <CustodianshipCard
-                v-for="custodianship in sortedCustodianships"
+                v-for="custodianship in props.custodianships"
                 :key="custodianship.id"
                 :custodianship="custodianship"
                 :is-resetting="isResetting[custodianship.id] || false"

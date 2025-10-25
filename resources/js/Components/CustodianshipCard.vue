@@ -9,6 +9,7 @@ import TimerProgressBar from './TimerProgressBar.vue'
 import ConfirmableButton from './ConfirmableButton.vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTimerCountdown } from '@/composables/useTimerCountdown'
+import { parseIntervalToDays } from '@/composables/useInterval'
 import type { CustodianshipCardProps } from '@/types/components'
 import dayjs from 'dayjs'
 
@@ -22,11 +23,10 @@ const emit = defineEmits<{
     activate: [custodianshipId: number]
 }>()
 
-// Get countdown timer for active custodianships
 const {
     detailedCountdown,
     isExpired,
-} = useTimerCountdown(props.custodianship.nextTriggerAt, props.custodianship.intervalDays)
+} = useTimerCountdown(props.custodianship.nextTriggerAt, props.custodianship.interval)
 
 const isInactive = computed(() => {
     return props.custodianship.status === 'draft' || props.custodianship.status === 'completed'
@@ -37,9 +37,19 @@ const canReset = computed(() => {
 })
 
 const cardClass = computed(() => {
-    if (isExpired.value) {
-        return 'border-l-4 border-l-red-500 bg-red-50 hover:shadow-md transition-shadow duration-200'
+    // Completed custodianships - white bg with colored left border based on delivery status
+    if (props.custodianship.status === 'completed') {
+        const deliveryStatus = props.custodianship.deliveryStatus
+        if (deliveryStatus === 'delivered') {
+            return 'border-l-4 border-l-green-500 bg-white hover:shadow-md transition-shadow duration-200'
+        }
+        if (deliveryStatus === 'failed' || deliveryStatus === 'bounced') {
+            return 'border-l-4 border-l-red-500 bg-white hover:shadow-md transition-shadow duration-200'
+        }
+        // Pending delivery (status completed but no delivery status yet)
+        return 'border-l-4 border-l-yellow-500 bg-white hover:shadow-md transition-shadow duration-200'
     }
+
     if (isInactive.value) {
         return 'bg-gray-50 border-gray-200 hover:shadow-sm transition-shadow duration-200 opacity-80'
     }
@@ -47,13 +57,13 @@ const cardClass = computed(() => {
 })
 
 const textColorClass = computed(() => {
-    if (isExpired.value) return 'text-red-900'
+    if (props.custodianship.status === 'completed') return 'text-gray-900'
     if (isInactive.value) return 'text-gray-500'
     return 'text-gray-900'
 })
 
 const subtextColorClass = computed(() => {
-    if (isExpired.value) return 'text-red-700'
+    if (props.custodianship.status === 'completed') return 'text-gray-500'
     if (isInactive.value) return 'text-gray-400'
     return 'text-gray-500'
 })
@@ -83,7 +93,8 @@ const timerColorClass = computed(() => {
     return 'text-gray-700 font-medium'
 })
 
-const formatInterval = (intervalDays: number) => {
+const formatInterval = (interval: string) => {
+    const intervalDays = parseIntervalToDays(interval)
     const totalMinutes = intervalDays * 24 * 60
 
     if (totalMinutes < 60) {
@@ -113,7 +124,7 @@ const formatInterval = (intervalDays: number) => {
                         </h3>
                         <div class="flex items-center gap-2 mt-1 text-sm" :class="subtextColorClass">
                             <ClockIcon class="h-4 w-4" />
-                            <span>{{ formatInterval(custodianship.intervalDays) }}</span>
+                            <span>{{ formatInterval(custodianship.interval) }}</span>
                         </div>
                     </div>
 
@@ -126,7 +137,7 @@ const formatInterval = (intervalDays: number) => {
                     </div>
                     <StatusBadge
                         v-else
-                        :status="isExpired ? 'pending' : custodianship.status"
+                        :status="isExpired ? 'completed' : custodianship.status"
                         :delivery-status="custodianship.deliveryStatus"
                     />
                 </div>
@@ -135,7 +146,7 @@ const formatInterval = (intervalDays: number) => {
                 <div class="pt-2">
                     <TimerProgressBar
                         :next-trigger-at="custodianship.nextTriggerAt"
-                        :interval-days="custodianship.intervalDays"
+                        :interval="custodianship.interval"
                         :status="custodianship.status"
                     />
                 </div>
@@ -145,13 +156,13 @@ const formatInterval = (intervalDays: number) => {
                     <div class="flex items-center gap-2">
                         <UserGroupIcon class="h-4 w-4" />
                         <span>
-                            {{ custodianship.recipients.length }} {{ custodianship.recipients.length === 1 ? 'recipient' : 'recipients' }}
+                            {{ custodianship.recipientsCount ?? 0 }} {{ custodianship.recipientsCount === 1 ? 'recipient' : 'recipients' }}
                         </span>
                     </div>
-                    <div v-if="custodianship.attachments && custodianship.attachments.length > 0" class="flex items-center gap-2">
+                    <div v-if="custodianship.attachmentsCount && custodianship.attachmentsCount > 0" class="flex items-center gap-2">
                         <PaperClipIcon class="h-4 w-4" />
                         <span>
-                            {{ custodianship.attachments.length }} {{ custodianship.attachments.length === 1 ? 'attachment' : 'attachments' }}
+                            {{ custodianship.attachmentsCount }} {{ custodianship.attachmentsCount === 1 ? 'attachment' : 'attachments' }}
                         </span>
                     </div>
                 </div>

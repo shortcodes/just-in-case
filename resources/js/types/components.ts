@@ -6,12 +6,12 @@ import type { CustodianshipStatus, DeliveryStatus, RecipientViewModel, Custodian
 
 export interface StatusBadgeProps {
     status: CustodianshipStatus | 'pending'
-    deliveryStatus?: DeliveryStatus
+    deliveryStatus?: DeliveryStatus | null
 }
 
 export interface TimerProgressBarProps {
     nextTriggerAt: string | null
-    intervalDays: number
+    interval: string
     status: CustodianshipStatus
 }
 

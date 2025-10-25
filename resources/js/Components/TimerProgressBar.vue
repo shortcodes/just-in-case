@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { Progress } from '@/components/ui/progress'
 import type { TimerProgressBarProps } from '@/types/components'
 import { useTimerCountdown } from '@/composables/useTimerCountdown'
+import { parseIntervalToDays } from '@/composables/useInterval'
 
 const props = defineProps<TimerProgressBarProps>()
 
@@ -15,7 +16,7 @@ const {
     exactExpiryDate,
     detailedCountdown,
     totalSecondsRemaining,
-} = useTimerCountdown(props.nextTriggerAt, props.intervalDays)
+} = useTimerCountdown(props.nextTriggerAt, props.interval)
 
 const progressBarColor = computed(() => {
     if (props.status === 'draft') return 'bg-gray-400'
@@ -24,7 +25,8 @@ const progressBarColor = computed(() => {
     return 'bg-green-500'
 })
 
-const formatInterval = (intervalDays: number) => {
+const formatInterval = (interval: string) => {
+    const intervalDays = parseIntervalToDays(interval)
     const totalMinutes = intervalDays * 24 * 60
 
     if (totalMinutes < 60) {
@@ -60,7 +62,7 @@ const displayText = computed(() => {
     if (isExpired.value) return 'Expired - Message will be sent soon'
 
     const remaining = formatRemaining(totalSecondsRemaining.value)
-    const interval = formatInterval(props.intervalDays)
+    const interval = formatInterval(props.interval)
 
     return `${remaining} of ${interval} remaining`
 })

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustodianshipController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResetCustodianshipController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/custodianships/{custodianship}/edit', [CustodianshipController::class, 'edit'])->name('custodianships.edit');
     Route::patch('/custodianships/{custodianship}', [CustodianshipController::class, 'update'])->name('custodianships.update');
     Route::delete('/custodianships/{custodianship}', [CustodianshipController::class, 'destroy'])->name('custodianships.destroy');
-    Route::post('/custodianships/{custodianship}/reset', [CustodianshipController::class, 'reset'])->name('custodianships.reset');
+    Route::post('/custodianships/{custodianship}/reset', ResetCustodianshipController::class)->name('custodianships.reset');
 });
 
 require __DIR__.'/auth.php';

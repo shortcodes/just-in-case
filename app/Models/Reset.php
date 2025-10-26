@@ -19,6 +19,7 @@ class Reset extends Model
         'reset_method',
         'ip_address',
         'user_agent',
+        'created_at',
     ];
 
     protected function casts(): array

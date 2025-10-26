@@ -17,12 +17,13 @@ class CustodianshipSeeder extends Seeder
     {
         $user = User::find(1);
 
-        if (!$user) {
+        if (! $user) {
             $this->command->info('User with ID 1 not found. Skipping custodianship seeding.');
+
             return;
         }
 
-        $this->command->info('Seeding custodianships for user: ' . $user->email);
+        $this->command->info('Seeding custodianships for user: '.$user->email);
 
         // 1. Expired Success - Completed and delivered
         $custodianship1 = Custodianship::create([

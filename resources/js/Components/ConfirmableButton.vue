@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ConfirmableButtonProps } from '@/types/components'
@@ -36,7 +36,10 @@ const handleClick = () => {
         }
     }
 
-    document.addEventListener('click', clickOutsideListener)
+    // Delay adding the listener to avoid immediate collapse
+    setTimeout(() => {
+        document.addEventListener('click', clickOutsideListener)
+    }, 100)
 }
 
 const handleConfirm = () => {
@@ -104,6 +107,7 @@ onUnmounted(() => {
             <Button
                 variant="default"
                 :size="size"
+                class="bg-green-600 hover:bg-green-700 text-white"
                 @click="handleConfirm"
             >
                 {{ confirmLabel }}

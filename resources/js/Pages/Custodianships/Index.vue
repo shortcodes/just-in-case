@@ -58,29 +58,15 @@ const handleCreateNew = () => {
 const handleReset = (custodianshipId: number) => {
     isResetting.value[custodianshipId] = true
 
-    // Simulate optimistic update
-    const custodianship = props.custodianships.find(c => c.id === custodianshipId)
-    if (custodianship) {
-        custodianship.lastResetAt = dayjs().toISOString()
-        const intervalDays = parseIntervalToDays(custodianship.interval)
-        custodianship.nextTriggerAt = dayjs().add(intervalDays, 'day').toISOString()
-    }
-
-    // In production, this would be a POST request
-    // router.post(route('custodianships.reset', custodianshipId), {}, {
-    //     onSuccess: () => {
-    //         isResetting.value[custodianshipId] = false
-    //     },
-    //     onError: () => {
-    //         // Rollback optimistic update
-    //         isResetting.value[custodianshipId] = false
-    //     }
-    // })
-
-    // For development, just simulate success
-    setTimeout(() => {
-        isResetting.value[custodianshipId] = false
-    }, 1000)
+    router.post(route('custodianships.reset', custodianshipId), {}, {
+        preserveState: false,
+        onSuccess: () => {
+            isResetting.value[custodianshipId] = false
+        },
+        onError: () => {
+            isResetting.value[custodianshipId] = false
+        }
+    })
 }
 
 const handleResendVerification = () => {

@@ -203,7 +203,7 @@ const formatInterval = (interval: string) => {
 
                     <!-- Reset button for active custodianships -->
                     <ConfirmableButton
-                        v-else-if="canReset"
+                        v-if="canReset"
                         label="Reset Timer"
                         size="default"
                         :disabled="!canReset || isResetting"

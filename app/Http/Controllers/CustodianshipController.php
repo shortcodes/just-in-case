@@ -49,10 +49,4 @@ class CustodianshipController extends Controller
     {
         return Inertia::render('Custodianships/Edit');
     }
-
-    public function reset(Request $request, $id)
-    {
-        // TODO: Implement reset logic
-        return back();
-    }
 }

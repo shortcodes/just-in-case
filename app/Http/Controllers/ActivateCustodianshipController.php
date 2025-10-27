@@ -22,7 +22,7 @@ class ActivateCustodianshipController extends Controller
         ]);
 
         return redirect()
-            ->route('custodianships.show', $custodianship)
+            ->route('custodianships.index')
             ->with('success', 'Custodianship activated successfully.');
     }
 }

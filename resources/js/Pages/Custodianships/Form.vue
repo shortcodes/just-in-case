@@ -4,7 +4,6 @@ import { Head, useForm, router } from '@inertiajs/vue3'
 import { ChevronDownIcon, PhotoIcon, XMarkIcon, DocumentIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +16,8 @@ type CustodianshipFormProps = CreateCustodianshipPageProps | EditCustodianshipPa
 
 const props = defineProps<CustodianshipFormProps>()
 
-const isEditMode = computed(() => 'custodianship' in props)
+const existingCustodianship = computed(() => (props as Partial<EditCustodianshipPageProps>).custodianship ?? null)
+const isEditMode = computed(() => existingCustodianship.value !== null)
 
 const parseIntervalDays = (days: number): { value: number, unit: string } => {
     const totalMinutes = days * 24 * 60
@@ -38,8 +38,8 @@ const parseIntervalDays = (days: number): { value: number, unit: string } => {
 }
 
 const getInitialFormData = (): CreateCustodianshipFormData => {
-    if (isEditMode.value && 'custodianship' in props) {
-        const { custodianship } = props as EditCustodianshipPageProps
+    if (isEditMode.value && existingCustodianship.value) {
+        const custodianship = existingCustodianship.value
         const interval = parseIntervalDays(custodianship.intervalDays || 90)
 
         const recipients = Array.isArray(custodianship.recipients)
@@ -67,9 +67,9 @@ const getInitialFormData = (): CreateCustodianshipFormData => {
 
 const breadcrumbs = computed(() => [
     { label: 'Custodianships', href: route('custodianships.index') },
-    ...(isEditMode.value && 'custodianship' in props
+    ...(isEditMode.value && existingCustodianship.value
         ? [
-            { label: (props as EditCustodianshipPageProps).custodianship.name, href: route('custodianships.show', (props as EditCustodianshipPageProps).custodianship.uuid) },
+            { label: existingCustodianship.value.name, href: route('custodianships.show', existingCustodianship.value.uuid) },
             { label: 'Edit' }
         ]
         : [{ label: 'Create New' }]
@@ -86,10 +86,6 @@ const totalAttachmentSize = computed(() => {
     return uploadedAttachments.value.reduce((sum, file) => sum + file.size, 0)
 })
 
-const showDraftInfoBanner = computed(() => {
-    return !isEditMode.value
-})
-
 const canAddRecipient = computed(() => form.recipients.length < 2)
 const canAddFiles = computed(() => totalAttachmentSize.value < 10485760)
 
@@ -101,9 +97,7 @@ const pageDescription = computed(() =>
 )
 
 function handleSubmit() {
-    const custodianshipId = isEditMode.value && 'custodianship' in props
-        ? (props as EditCustodianshipPageProps).custodianship.uuid
-        : null
+    const custodianshipId = existingCustodianship.value?.uuid ?? null
 
     form.transform((data) => ({
         ...data,
@@ -122,8 +116,8 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-    const returnRoute = isEditMode.value && 'custodianship' in props
-        ? route('custodianships.show', (props as EditCustodianshipPageProps).custodianship.uuid)
+    const returnRoute = isEditMode.value && existingCustodianship.value
+        ? route('custodianships.show', existingCustodianship.value.uuid)
         : route('custodianships.index')
 
     if (form.isDirty) {
@@ -218,12 +212,6 @@ function openFileDialog() {
     <AuthenticatedLayout>
         <div class="space-y-6">
             <Breadcrumbs :items="breadcrumbs" />
-
-            <Alert v-if="showDraftInfoBanner" class="border-blue-200 bg-blue-50">
-                <AlertDescription class="text-blue-800">
-                    Custodianship will be created as a draft. You can activate it later from the custodianship details page.
-                </AlertDescription>
-            </Alert>
 
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">{{ pageTitle }}</h1>

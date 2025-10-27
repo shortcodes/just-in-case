@@ -23,7 +23,7 @@ const recipientMessageTooltipOpen = ref(false)
 
 const emit = defineEmits<{
     reset: [custodianshipUuid: string]
-    activate: [custodianshipId: number]
+    activate: [custodianshipUuid: string]
 }>()
 
 const {
@@ -76,7 +76,7 @@ const handleReset = () => {
 }
 
 const handleActivate = () => {
-    emit('activate', props.custodianship.id)
+    emit('activate', props.custodianship.uuid)
 }
 
 const toggleEmailTooltip = () => {
@@ -197,16 +197,16 @@ const formatInterval = (interval: string) => {
                 <!-- Actions -->
                 <div class="flex items-center gap-2 pt-2 border-t">
                     <!-- Activate button for drafts -->
-                    <Button
+                    <ConfirmableButton
                         v-if="isDraft"
-                        @click="handleActivate"
-                        :disabled="!canActivate"
-                        variant="default"
+                        label="Activate"
+                        confirm-label="Confirm Activation"
                         size="default"
-                        :class="canActivate ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'"
-                    >
-                        Activate
-                    </Button>
+                        :disabled="!canActivate"
+                        :button-class="canActivate ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'"
+                        confirm-button-class="bg-green-600 hover:bg-green-700 text-white"
+                        @confirm="handleActivate"
+                    />
 
                     <!-- Info icon for email verification -->
                     <TooltipProvider v-if="missingEmailVerification" :delayDuration="0">

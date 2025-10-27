@@ -22,6 +22,9 @@ export interface ConfirmableButtonProps {
     disabled?: boolean
     tooltipDisabled?: string
     size?: 'default' | 'sm' | 'lg' | 'icon'
+    buttonClass?: string
+    confirmButtonClass?: string
+    cancelButtonClass?: string
 }
 
 export interface RecipientListProps {

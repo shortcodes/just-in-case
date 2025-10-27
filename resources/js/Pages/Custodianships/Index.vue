@@ -10,7 +10,6 @@ import ExpiringCustodianshipsBanner from '@/Components/ExpiringCustodianshipsBan
 import CustodianshipCard from '@/Components/CustodianshipCard.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 import type { CustodianshipsIndexPageProps } from '@/types/models'
-import { parseIntervalToDays } from '@/composables/useInterval'
 import dayjs from 'dayjs'
 
 const props = defineProps<CustodianshipsIndexPageProps>()
@@ -92,26 +91,11 @@ const handleResetAll = () => {
     }
 }
 
-const handleActivate = (custodianshipId: number) => {
-    // In production, this would be a POST request
-    // router.post(route('custodianships.activate', custodianshipId), {}, {
-    //     onSuccess: () => {
-    //         // Custodianship activated
-    //     },
-    //     onError: () => {
-    //         // Handle error
-    //     }
-    // })
-
-    // For development, simulate optimistic update
-    const custodianship = props.custodianships.find(c => c.id === custodianshipId)
-    if (custodianship) {
-        custodianship.status = 'active'
-        custodianship.activatedAt = dayjs().toISOString()
-        custodianship.lastResetAt = dayjs().toISOString()
-        const intervalDays = parseIntervalToDays(custodianship.interval)
-        custodianship.nextTriggerAt = dayjs().add(intervalDays, 'day').toISOString()
-    }
+const handleActivate = (custodianshipUuid: string) => {
+    router.post(route('custodianships.activate', custodianshipUuid), {}, {
+        preserveScroll: true,
+        preserveState: false,
+    })
 }
 </script>
 

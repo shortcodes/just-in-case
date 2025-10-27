@@ -10,6 +10,9 @@ const props = withDefaults(defineProps<ConfirmableButtonProps>(), {
     disabled: false,
     tooltipDisabled: '',
     size: 'default',
+    buttonClass: '',
+    confirmButtonClass: '',
+    cancelButtonClass: '',
 })
 
 const emit = defineEmits<{
@@ -80,6 +83,7 @@ onUnmounted(() => {
                             v-if="!isExpanded"
                             :disabled="disabled"
                             :size="size"
+                            :class="buttonClass"
                             @click="handleClick"
                         >
                             <slot name="icon" />
@@ -97,6 +101,7 @@ onUnmounted(() => {
             v-else-if="!isExpanded"
             :disabled="disabled"
             :size="size"
+            :class="buttonClass"
             @click="handleClick"
         >
             <slot name="icon" />
@@ -107,7 +112,7 @@ onUnmounted(() => {
             <Button
                 variant="default"
                 :size="size"
-                class="bg-green-600 hover:bg-green-700 text-white"
+                :class="['bg-green-600 hover:bg-green-700 text-white', confirmButtonClass]"
                 @click="handleConfirm"
             >
                 {{ confirmLabel }}
@@ -115,6 +120,7 @@ onUnmounted(() => {
             <Button
                 variant="outline"
                 :size="size"
+                :class="cancelButtonClass"
                 @click="handleCancel"
             >
                 {{ cancelLabel }}

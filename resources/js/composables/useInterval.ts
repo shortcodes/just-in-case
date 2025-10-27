@@ -7,23 +7,35 @@ import { computed, type ComputedRef } from 'vue'
 export function parseIntervalToDays(interval: string): number {
     if (!interval) return 0
 
-    // Simple parser for common ISO 8601 durations
-    const dayMatch = interval.match(/P(\d+)D/)
-    if (dayMatch) {
-        return parseInt(dayMatch[1], 10)
+    const isoMatch = interval.match(
+        /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+    )
+
+    if (!isoMatch) {
+        return 0
     }
 
-    const yearMatch = interval.match(/P(\d+)Y/)
-    if (yearMatch) {
-        return parseInt(yearMatch[1], 10) * 365
-    }
+    const [
+        ,
+        years,
+        months,
+        weeks,
+        days,
+        hours,
+        minutes,
+        seconds,
+    ] = isoMatch
 
-    const monthMatch = interval.match(/P(\d+)M/)
-    if (monthMatch) {
-        return parseInt(monthMatch[1], 10) * 30
-    }
+    const totalDays =
+        (years ? parseInt(years, 10) * 365 : 0) +
+        (months ? parseInt(months, 10) * 30 : 0) +
+        (weeks ? parseInt(weeks, 10) * 7 : 0) +
+        (days ? parseInt(days, 10) : 0) +
+        (hours ? parseInt(hours, 10) / 24 : 0) +
+        (minutes ? parseInt(minutes, 10) / (24 * 60) : 0) +
+        (seconds ? parseInt(seconds, 10) / (24 * 60 * 60) : 0)
 
-    return 0
+    return totalDays
 }
 
 /**

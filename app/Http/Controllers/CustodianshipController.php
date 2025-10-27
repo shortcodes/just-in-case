@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\IntervalUnit;
+use App\Http\Requests\DeleteCustodianshipRequest;
 use App\Http\Requests\EditCustodianshipRequest;
 use App\Http\Requests\ShowCustodianshipRequest;
 use App\Http\Requests\StoreCustodianshipRequest;
@@ -153,5 +154,14 @@ class CustodianshipController extends Controller
         return redirect()
             ->route('custodianships.show', $custodianship)
             ->with('success', 'Custodianship updated successfully.');
+    }
+
+    public function destroy(DeleteCustodianshipRequest $request, Custodianship $custodianship): RedirectResponse
+    {
+        $custodianship->delete();
+
+        return redirect()
+            ->route('custodianships.index')
+            ->with('success', 'Custodianship deleted successfully.');
     }
 }

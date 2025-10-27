@@ -68,8 +68,7 @@ const handleOpenChange = (value: boolean) => {
                 <div class="flex items-start space-x-2">
                     <Checkbox
                         id="confirm-checkbox"
-                        :checked="isChecked"
-                        @update:checked="isChecked = $event"
+                        v-model="isChecked"
                     />
                     <Label
                         for="confirm-checkbox"

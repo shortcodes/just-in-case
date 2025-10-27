@@ -16,15 +16,13 @@ import { PencilIcon, ArrowPathIcon, ChevronDownIcon, ChevronUpIcon } from '@hero
 import type { ShowCustodianshipPageProps } from '@/types/models'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { mockShowPageProps } from '@/data/mockCustodianships'
 
 dayjs.extend(relativeTime)
 
 const props = defineProps<ShowCustodianshipPageProps>()
 
-// Use mock data for development
-const custodianship = ref(mockShowPageProps.custodianship)
-const resetHistory = ref(mockShowPageProps.resetHistory || [])
+const custodianship = ref(props.custodianship)
+const resetHistory = ref(props.resetHistory || [])
 
 const isResetting = ref(false)
 const isDeleting = ref(false)

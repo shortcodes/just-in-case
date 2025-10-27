@@ -43,6 +43,10 @@ class Custodianship extends Model
             if (empty($custodianship->uuid)) {
                 $custodianship->uuid = (string) Str::uuid();
             }
+
+            if (empty($custodianship->status)) {
+                $custodianship->status = 'draft';
+            }
         });
     }
 

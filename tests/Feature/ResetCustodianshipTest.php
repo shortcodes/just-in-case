@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Custodianship;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ResetCustodianshipTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     public function test_authorized_user_can_reset_their_custodianship(): void
     {

@@ -84,10 +84,10 @@ REQ-004: Resetowanie hasła
 - Po kliknięciu linku użytkownik może ustawić nowe hasło
 - Walidacja nowego hasła: minimum 8 znaków
 
-REQ-005: Ograniczenia przed aktywacją
-- Użytkownik przed aktywacją email może tworzyć tylko powiernictwa w statusie "draft"
+REQ-005: Tworzenie powiernictw jako draft
+- Wszystkie nowo utworzone powiernictwa są zapisywane w statusie "draft"
 - Timery nie startują dla powiernictw w statusie draft
-- Po aktywacji użytkownik może ręcznie aktywować drafty
+- Użytkownik może ręcznie aktywować drafty z widoku Show lub Index
 
 ### 3.2 Zarządzanie powiernictwami
 
@@ -98,7 +98,7 @@ REQ-006: Tworzenie powiernictwa
   - Interwał czasowy w dniach (np. 30, 90, 180 dni)
   - Lista odbiorców (1-2 emaile w planie free)
   - Załączniki (suma do 10MB w planie free)
-- Status domyślny: draft (jeśli email nieaktywny) lub active (jeśli email aktywny)
+- Status domyślny: draft (wszystkie nowo utworzone powiernictwa)
 
 REQ-007: Walidacja limitów free
 - System blokuje utworzenie 4+ powiernictwa w planie free
@@ -500,9 +500,10 @@ Kryteria akceptacji:
   - Interwał czasowy (select: 30, 60, 90, 180, 365 dni)
   - Lista odbiorców (1-2 emaile, przycisk "+ Dodaj odbiorcy")
   - Upload załączników (drag & drop lub browse)
-- Przycisk "Zapisz jako draft" i "Zapisz i aktywuj"
-- Po zapisaniu: użytkownik przekierowany do dashboardu
-- Jeśli email nieaktywowany: tylko "Zapisz jako draft" dostępne
+- Banner informacyjny: "Custodianship will be created as a draft. You can activate it later from the custodianship details page."
+- Przycisk "Save" (zapisuje jako draft)
+- Po zapisaniu: użytkownik przekierowany do widoku szczegółów powiernictwa
+- Wszystkie powiernictwa tworzone jako draft, niezależnie od statusu email
 
 US-008: Edycja istniejącego powiernictwa
 Jako użytkownik z aktywnym powiernictwem
@@ -600,16 +601,16 @@ Kryteria akceptacji:
   - Komunikat: "Powiernictwo zostało trwale usunięte"
 
 US-015: Aktywacja powiernictwa draft
-Jako użytkownik po aktywacji emaila
+Jako użytkownik
 Chcę aktywować moje powiernictwa draft
 Aby uruchomić timery
 
 Kryteria akceptacji:
-- Po aktywacji emaila: banner na dashboardzie "Masz X powiernictw w draft. Aktywuj je aby uruchomić timery."
-- Przycisk "Aktywuj" przy każdym drafcie
+- Banner na dashboardzie (jeśli są drafty): "Masz X powiernictw w draft. Aktywuj je aby uruchomić timery."
+- Przycisk "Aktywuj" w widoku Show lub akcja w widoku Index przy każdym drafcie
 - Kliknięcie zmienia status na active
 - Timer startuje: last_reset_at = teraz, next_trigger_at = teraz + interwał
-- Draft nie może być aktywowany jeśli email nieaktywowany
+- Aktywacja możliwa niezależnie od statusu weryfikacji email
 
 ### 5.4 System timerów i resetowanie
 

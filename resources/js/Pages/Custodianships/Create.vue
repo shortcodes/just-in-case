@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, router } from '@inertiajs/vue3'
 import { ChevronDownIcon, PhotoIcon, XMarkIcon, DocumentIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
@@ -23,8 +23,9 @@ const breadcrumbs = [
 const form = useForm<CreateCustodianshipFormData>({
     name: '',
     messageContent: null,
-    interval: 'P90D',
-    recipients: [''],
+    intervalValue: 90,
+    intervalUnit: 'days',
+    recipients: [],
     attachments: [],
 })
 
@@ -36,28 +37,29 @@ const totalAttachmentSize = computed(() => {
     return uploadedAttachments.value.reduce((sum, file) => sum + file.size, 0)
 })
 
-const showEmailVerificationBanner = computed(() => {
-    return !props.user.emailVerified
+const showDraftInfoBanner = computed(() => {
+    return true
 })
 
 const canAddRecipient = computed(() => form.recipients.length < 2)
 const canAddFiles = computed(() => totalAttachmentSize.value < 10485760)
 
 function handleSubmit() {
-    console.log('Form submitted:', {
-        ...form.data(),
+    form.transform((data) => ({
+        ...data,
         attachments: uploadedAttachments.value.map(a => a.id),
+    })).post(route('custodianships.store'), {
+        preserveScroll: true,
     })
-    alert('Form submitted! (Mock mode - check console)')
 }
 
 function handleCancel() {
     if (form.isDirty) {
         if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-            window.location.href = '/custodianships'
+            router.visit(route('custodianships.index'))
         }
     } else {
-        window.location.href = '/custodianships'
+        router.visit(route('custodianships.index'))
     }
 }
 
@@ -66,9 +68,7 @@ function updateRecipient(index: number, value: string) {
 }
 
 function removeRecipient(index: number) {
-    if (form.recipients.length > 1) {
-        form.recipients.splice(index, 1)
-    }
+    form.recipients.splice(index, 1)
 }
 
 function addRecipient() {
@@ -147,9 +147,9 @@ function openFileDialog() {
         <div class="space-y-6">
             <Breadcrumbs :items="breadcrumbs" />
 
-            <Alert v-if="showEmailVerificationBanner" class="border-yellow-200 bg-yellow-50">
-                <AlertDescription class="text-yellow-800">
-                    Your email is not verified. Custodianship will be saved as draft until you verify your email.
+            <Alert v-if="showDraftInfoBanner" class="border-blue-200 bg-blue-50">
+                <AlertDescription class="text-blue-800">
+                    Custodianship will be created as a draft. You can activate it later from the custodianship details page.
                 </AlertDescription>
             </Alert>
 
@@ -188,24 +188,35 @@ function openFileDialog() {
                             </div>
 
                             <div class="sm:col-span-3">
-                                <Label for="interval">Check-in Interval</Label>
-                                <div class="mt-2">
-                                    <Select v-model="form.interval" :disabled="form.processing">
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select interval" />
+                                <Label for="intervalValue">Check-in Interval</Label>
+                                <div class="mt-2 flex gap-2">
+                                    <Input
+                                        id="intervalValue"
+                                        v-model.number="form.intervalValue"
+                                        type="number"
+                                        min="1"
+                                        placeholder="90"
+                                        :disabled="form.processing"
+                                        class="flex-1"
+                                    />
+                                    <Select v-model="form.intervalUnit" :disabled="form.processing">
+                                        <SelectTrigger class="w-32">
+                                            <SelectValue placeholder="Unit" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem
-                                                v-for="option in props.intervals"
-                                                :key="option.value"
-                                                :value="option.value"
+                                                v-for="unit in props.intervalUnits"
+                                                :key="unit.value"
+                                                :value="unit.value"
                                             >
-                                                {{ option.label }}
+                                                {{ unit.label }}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <p v-if="form.errors.interval" class="mt-3 text-sm/6 text-destructive">{{ form.errors.interval }}</p>
+                                <p v-if="form.errors.intervalValue || form.errors.intervalUnit" class="mt-3 text-sm/6 text-destructive">
+                                    {{ form.errors.intervalValue || form.errors.intervalUnit }}
+                                </p>
                                 <p v-else class="mt-3 text-sm/6 text-muted-foreground">
                                     How often you need to check in to prevent the message from being sent
                                 </p>
@@ -335,7 +346,6 @@ function openFileDialog() {
                                             variant="outline"
                                             size="icon"
                                             @click="removeRecipient(index)"
-                                            :disabled="form.recipients.length <= 1"
                                         >
                                             <XMarkIcon class="h-4 w-4" />
                                         </Button>

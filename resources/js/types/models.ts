@@ -67,10 +67,9 @@ export interface CustodianshipsIndexPageProps {
  * Types for Create Custodianship View
  */
 
-export interface IntervalOption {
-    value: string // ISO 8601 duration
+export interface IntervalUnitOption {
+    value: string
     label: string
-    days: number
 }
 
 export interface TempAttachment {
@@ -85,14 +84,15 @@ export interface TempAttachment {
 export interface CreateCustodianshipFormData {
     name: string
     messageContent: string | null
-    interval: string // ISO 8601
+    intervalValue: number
+    intervalUnit: string
     recipients: string[] // emails
     attachments: string[] // temp attachment IDs
 }
 
 export interface CreateCustodianshipPageProps {
     user: UserViewModel
-    intervals: IntervalOption[]
+    intervalUnits: IntervalUnitOption[]
 }
 
 /**

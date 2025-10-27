@@ -22,6 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/custodianships', [CustodianshipController::class, 'index'])->name('custodianships.index');
+    Route::get('/custodianships/create', [CustodianshipController::class, 'create'])->name('custodianships.create');
+    Route::post('/custodianships', [CustodianshipController::class, 'store'])->name('custodianships.store');
     Route::get('/custodianships/{custodianship}', [CustodianshipController::class, 'show'])->name('custodianships.show');
     Route::get('/custodianships/{custodianship}/edit', [CustodianshipController::class, 'edit'])->name('custodianships.edit');
     Route::patch('/custodianships/{custodianship}', [CustodianshipController::class, 'update'])->name('custodianships.update');

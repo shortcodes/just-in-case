@@ -7,7 +7,7 @@ Widok Create Custodianship umożliwia użytkownikowi utworzenie nowego powiernic
 ### Kluczowe cele:
 - Szybkie i intuicyjne utworzenie powiernictwa
 - Walidacja limitów freemium (max 2 odbiorców, max 10MB załączników)
-- Automatyczny zapis jako draft (jeśli email niezweryfikowany) lub active (jeśli zweryfikowany)
+- Automatyczny zapis jako draft (wszystkie nowo utworzone powiernictwa)
 - Dwuetapowy upload załączników (temp storage → przypisanie do powiernictwa)
 - Unsaved changes warning przy próbie opuszczenia strony
 
@@ -430,20 +430,17 @@ const form = useForm<CreateCustodianshipFormData>({
    - Nazwa wypełniona
    - Min 1 odbiorca z valid email
    - Interwał wybrany
-2. Określ status:
-   - Jeśli `user.emailVerified === false`: status = 'draft'
-   - Jeśli `user.emailVerified === true`: status = 'active'
-3. Submit form:
+2. Submit form:
    - `form.post('/custodianships', options)`
-4. Backend:
+3. Backend:
    - Walidacja server-side (wszystkie pola)
-   - Utworzenie custodianship z określonym statusem
+   - Utworzenie custodianship ze statusem 'draft'
    - Przypisanie temp attachments do custodianship (media-library)
    - Utworzenie message (encrypted)
    - Utworzenie recipients
-   - Jeśli status='active': set lastResetAt=now, nextTriggerAt=now+interval
-5. Redirect: `/custodianships/{uuid}` (Show page)
-6. Toast: "Custodianship created successfully"
+   - Set activated_at=null, last_reset_at=null, next_trigger_at=null
+4. Redirect: `/custodianships/{uuid}` (Show page)
+5. Toast: "Custodianship created successfully"
 
 ### 8.7 Anulowanie (Cancel)
 **Trigger:** Kliknięcie "Cancel"
@@ -507,13 +504,13 @@ const form = useForm<CreateCustodianshipFormData>({
 - Frontend: Select z options z `intervals` prop
 - Backend validation: `required|in:P30D,P60D,P90D,P180D,P365D`
 
-### 9.6 Email niezweryfikowany → draft
-**Warunek:** `!user.emailVerified`
+### 9.6 Wszystkie powiernictwa tworzone jako draft
+**Warunek:** Zawsze
 **Komponenty:** Create.vue
 **Efekt:**
-- Informacyjny banner na górze formularza: "Your email is not verified. Custodianship will be saved as draft until you verify your email."
+- Informacyjny banner na górze formularza: "Custodianship will be created as a draft. You can activate it later from the custodianship details page."
 - Po zapisaniu: status = 'draft', timer nieaktywny
-- Redirect do Show page z informacją o draft status
+- Redirect do Show page z informacją o draft status i możliwością aktywacji
 
 ## 10. Obsługa błędów
 

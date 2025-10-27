@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Link } from '@inertiajs/vue3'
-import { ClockIcon, UserGroupIcon, ArrowPathIcon, PaperClipIcon } from '@heroicons/vue/24/outline'
+import { ClockIcon, UserGroupIcon, ArrowPathIcon, PaperClipIcon, InformationCircleIcon } from '@heroicons/vue/24/outline'
 import StatusBadge from './StatusBadge.vue'
 import TimerProgressBar from './TimerProgressBar.vue'
 import ConfirmableButton from './ConfirmableButton.vue'
@@ -18,8 +18,11 @@ const props = withDefaults(defineProps<CustodianshipCardProps>(), {
     emailVerified: false,
 })
 
+const emailTooltipOpen = ref(false)
+const recipientMessageTooltipOpen = ref(false)
+
 const emit = defineEmits<{
-    reset: [custodianshipId: number]
+    reset: [custodianshipUuid: string]
     activate: [custodianshipId: number]
 }>()
 
@@ -69,19 +72,43 @@ const subtextColorClass = computed(() => {
 })
 
 const handleReset = () => {
-    emit('reset', props.custodianship.id)
+    emit('reset', props.custodianship.uuid)
 }
 
 const handleActivate = () => {
     emit('activate', props.custodianship.id)
 }
 
+const toggleEmailTooltip = () => {
+    emailTooltipOpen.value = !emailTooltipOpen.value
+}
+
+const toggleRecipientMessageTooltip = () => {
+    recipientMessageTooltipOpen.value = !recipientMessageTooltipOpen.value
+}
+
 const isDraft = computed(() => {
     return props.custodianship.status === 'draft'
 })
 
+const hasRecipients = computed(() => {
+    return props.custodianship.recipientsCount && props.custodianship.recipientsCount > 0
+})
+
+const hasMessage = computed(() => {
+    return props.custodianship.messageContent && props.custodianship.messageContent.trim().length > 0
+})
+
 const canActivate = computed(() => {
-    return isDraft.value && props.emailVerified
+    return isDraft.value && props.emailVerified && hasRecipients.value && hasMessage.value
+})
+
+const missingEmailVerification = computed(() => {
+    return isDraft.value && !props.emailVerified
+})
+
+const missingRecipientOrMessage = computed(() => {
+    return isDraft.value && (!hasRecipients.value || !hasMessage.value)
 })
 
 const showTimer = computed(() => {
@@ -170,20 +197,26 @@ const formatInterval = (interval: string) => {
                 <!-- Actions -->
                 <div class="flex items-center gap-2 pt-2 border-t">
                     <!-- Activate button for drafts -->
-                    <TooltipProvider v-if="isDraft && !canActivate">
-                        <Tooltip>
+                    <Button
+                        v-if="isDraft"
+                        @click="handleActivate"
+                        :disabled="!canActivate"
+                        variant="default"
+                        size="default"
+                        :class="canActivate ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'"
+                    >
+                        Activate
+                    </Button>
+
+                    <!-- Info icon for email verification -->
+                    <TooltipProvider v-if="missingEmailVerification" :delayDuration="0">
+                        <Tooltip :open="emailTooltipOpen" @update:open="emailTooltipOpen = $event">
                             <TooltipTrigger as-child>
-                                <div>
-                                    <Button
-                                        @click="handleActivate"
-                                        :disabled="true"
-                                        variant="default"
-                                        size="default"
-                                        class="bg-gray-400 text-gray-200 cursor-not-allowed"
-                                    >
-                                        Activate
-                                    </Button>
-                                </div>
+                                <InformationCircleIcon
+                                    class="h-5 w-5 text-red-500 cursor-pointer outline-none focus:outline-none select-none hover:text-red-600"
+                                    @click="toggleEmailTooltip"
+                                    tabindex="0"
+                                />
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>Please confirm your email address to activate</p>
@@ -191,15 +224,21 @@ const formatInterval = (interval: string) => {
                         </Tooltip>
                     </TooltipProvider>
 
-                    <Button
-                        v-else-if="isDraft"
-                        @click="handleActivate"
-                        variant="default"
-                        size="default"
-                        class="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                        Activate
-                    </Button>
+                    <!-- Info icon for recipient/message requirement -->
+                    <TooltipProvider v-if="missingRecipientOrMessage" :delayDuration="0">
+                        <Tooltip :open="recipientMessageTooltipOpen" @update:open="recipientMessageTooltipOpen = $event">
+                            <TooltipTrigger as-child>
+                                <InformationCircleIcon
+                                    class="h-5 w-5 text-red-500 cursor-pointer outline-none focus:outline-none select-none hover:text-red-600"
+                                    @click="toggleRecipientMessageTooltip"
+                                    tabindex="0"
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>You have to have recipient and message to activate this custodianship</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
 
                     <!-- Reset button for active custodianships -->
                     <ConfirmableButton
@@ -216,7 +255,7 @@ const formatInterval = (interval: string) => {
                     </ConfirmableButton>
 
                     <div class="ml-auto flex gap-2">
-                        <Link :href="route('custodianships.show', custodianship.id)">
+                        <Link :href="route('custodianships.show', custodianship.uuid)">
                             <Button variant="ghost" size="sm" class="text-gray-600 hover:text-gray-900">
                                 View Details
                             </Button>

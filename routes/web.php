@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivateCustodianshipController;
 use App\Http\Controllers\CustodianshipController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResetCustodianshipController;
@@ -29,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/custodianships/{custodianship}', [CustodianshipController::class, 'update'])->name('custodianships.update');
     Route::delete('/custodianships/{custodianship}', [CustodianshipController::class, 'destroy'])->name('custodianships.destroy');
     Route::post('/custodianships/{custodianship}/reset', ResetCustodianshipController::class)->name('custodianships.reset');
+    Route::post('/custodianships/{custodianship}/activate', ActivateCustodianshipController::class)->name('custodianships.activate');
 });
 
 require __DIR__.'/auth.php';

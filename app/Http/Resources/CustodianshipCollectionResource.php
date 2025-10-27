@@ -22,7 +22,8 @@ class CustodianshipCollectionResource extends JsonResource
             'deliveryStatus' => $this->delivery_status,
             'interval' => $this->interval,
             'recipientsCount' => $this->recipients_count ?? 0,
-            'attachmentsCount' => 0, // TODO: implement when media library is added
+            'attachmentsCount' => 0,
+            'messageContent' => $this->whenLoaded('message', fn () => $this->message?->content),
             'lastResetAt' => $this->last_reset_at?->toISOString(),
             'nextTriggerAt' => $this->next_trigger_at?->toISOString(),
             'activatedAt' => $this->activated_at?->toISOString(),

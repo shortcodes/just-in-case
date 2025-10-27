@@ -12,7 +12,7 @@ import ResetHistoryTable from '@/Components/ResetHistoryTable.vue'
 import DeleteCustodianshipModal from '@/Components/DeleteCustodianshipModal.vue'
 import DangerZone from '@/Components/DangerZone.vue'
 import ConfirmableButton from '@/Components/ConfirmableButton.vue'
-import { PencilIcon, ArrowPathIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/24/outline'
+import { PencilIcon, ArrowPathIcon, ChevronDownIcon, ChevronUpIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import type { ShowCustodianshipPageProps } from '@/types/models'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -28,6 +28,7 @@ const isResetting = ref(false)
 const isDeleting = ref(false)
 const isDeleteModalOpen = ref(false)
 const isHistoryExpanded = ref(false)
+const isMessageVisible = ref(false)
 
 const canReset = computed(() => {
     if (custodianship.value.status !== 'active') return false
@@ -46,7 +47,7 @@ const statusDisplay = computed(() => {
 })
 
 const breadcrumbs = computed(() => [
-    { name: 'Custodianships', href: '/custodianships' },
+    { name: 'Custodianships', href: route('custodianships.index') },
     { name: custodianship.value.name, href: '#', current: true }
 ])
 
@@ -65,7 +66,7 @@ const handleReset = async () => {
 
     try {
         await router.post(
-            `/custodianships/${custodianship.value.uuid}/reset`,
+            route('custodianships.reset', custodianship.value.uuid),
             {},
             {
                 preserveScroll: true,
@@ -81,16 +82,16 @@ const handleReset = async () => {
 }
 
 const handleEdit = () => {
-    router.visit(`/custodianships/${custodianship.value.uuid}/edit`)
+    router.visit(route('custodianships.edit', custodianship.value.uuid))
 }
 
 const handleDelete = async () => {
     isDeleting.value = true
 
     try {
-        await router.delete(`/custodianships/${custodianship.value.uuid}`, {
+        await router.delete(route('custodianships.destroy', custodianship.value.uuid), {
             onSuccess: () => {
-                router.visit('/custodianships')
+                router.visit(route('custodianships.index'))
             },
             onError: () => {
                 isDeleteModalOpen.value = false
@@ -191,18 +192,6 @@ const toggleHistory = () => {
                 </p>
             </div>
 
-            <!-- Draft status banner -->
-            <div
-                v-if="custodianship.status === 'draft'"
-                class="bg-blue-50 border border-blue-200 rounded-lg p-4"
-            >
-                <div class="flex items-center justify-between">
-                    <p class="text-sm text-blue-800">
-                        This custodianship is a draft. Verify your email to activate it.
-                    </p>
-                </div>
-            </div>
-
             <!-- Delivery failed banner -->
             <div
                 v-if="custodianship.deliveryStatus === 'failed' || custodianship.deliveryStatus === 'bounced'"
@@ -213,73 +202,81 @@ const toggleHistory = () => {
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Left Column -->
-                <div class="space-y-6">
-                    <!-- Timer Section -->
-                    <TimerSection :custodianship="custodianship" />
+            <div class="space-y-6">
+                <!-- Timer Section (only for active status) -->
+                <TimerSection v-if="custodianship.status === 'active'" :custodianship="custodianship" />
 
-                    <!-- Details Section -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Message Details</CardTitle>
-                        </CardHeader>
-                        <CardContent class="space-y-4">
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-700 mb-2">Message Content</h3>
-                                <MessageContentViewer :content="custodianship.messageContent" />
-                            </div>
-                            <div class="pt-4 border-t">
-                                <div class="flex items-center justify-between text-sm">
-                                    <span class="text-gray-600">Check-in Interval</span>
-                                    <span class="font-medium text-gray-900">
-                                        {{ custodianship.intervalDays }} days
-                                    </span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <!-- Right Column -->
-                <div class="space-y-6">
-                    <!-- Recipients Section -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Recipients ({{ custodianship.recipients.length }})</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div v-if="custodianship.recipients.length > 0" class="space-y-3">
-                                <div
-                                    v-for="recipient in custodianship.recipients"
-                                    :key="recipient.id"
-                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                >
-                                    <span class="text-sm text-gray-900">{{ recipient.email }}</span>
-                                    <span class="text-xs text-gray-500">
-                                        Added {{ dayjs(recipient.createdAt).fromNow() }}
-                                    </span>
-                                </div>
-                            </div>
+                <!-- Message Content Section -->
+                <Card>
+                    <CardHeader>
+                        <div class="flex items-center justify-between">
+                            <CardTitle>Message Content</CardTitle>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                @click="isMessageVisible = !isMessageVisible"
+                                class="text-xs"
+                            >
+                                <EyeIcon v-if="!isMessageVisible" class="h-4 w-4 mr-1" />
+                                <EyeSlashIcon v-else class="h-4 w-4 mr-1" />
+                                {{ isMessageVisible ? 'Hide' : 'Show' }}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                        <div>
+                            <MessageContentViewer v-if="isMessageVisible" :content="custodianship.messageContent" />
                             <div v-else class="text-center py-8 text-gray-400 italic">
-                                (No recipients)
+                                Message content is hidden for privacy
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <div class="pt-4 border-t">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Check-in Interval</span>
+                                <span class="font-medium text-gray-900">
+                                    {{ custodianship.intervalDays }} days
+                                </span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                    <!-- Attachments Section -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Attachments ({{ custodianship.attachments.length }})</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <AttachmentList
-                                :attachments="custodianship.attachments"
-                                :custodianship-uuid="custodianship.uuid"
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
+                <!-- Recipients Section -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recipients ({{ custodianship.recipients?.length || 0 }})</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div v-if="custodianship.recipients && custodianship.recipients.length > 0" class="space-y-3">
+                            <div
+                                v-for="recipient in custodianship.recipients"
+                                :key="recipient.id"
+                                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
+                                <span class="text-sm text-gray-900">{{ recipient.email }}</span>
+                                <span class="text-xs text-gray-500">
+                                    Added {{ dayjs(recipient.createdAt).fromNow() }}
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-8 text-gray-400 italic">
+                            (No recipients)
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Attachments Section -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Attachments ({{ custodianship.attachments?.length || 0 }})</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <AttachmentList
+                            :attachments="custodianship.attachments || []"
+                            :custodianship-uuid="custodianship.uuid"
+                        />
+                    </CardContent>
+                </Card>
             </div>
 
             <!-- Reset History Section (Collapsible) -->

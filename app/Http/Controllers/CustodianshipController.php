@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\IntervalUnit;
+use App\Http\Requests\EditCustodianshipRequest;
 use App\Http\Requests\ShowCustodianshipRequest;
 use App\Http\Requests\StoreCustodianshipRequest;
+use App\Http\Requests\UpdateCustodianshipRequest;
 use App\Http\Resources\CustodianshipCollectionResource;
 use App\Http\Resources\CustodianshipResource;
 use App\Http\Resources\UserResource;
@@ -21,6 +23,7 @@ class CustodianshipController extends Controller
     {
         $custodianships = $request->user()
             ->custodianships()
+            ->with('message')
             ->withCount('recipients')
             ->orderByDefault()
             ->get();
@@ -33,7 +36,7 @@ class CustodianshipController extends Controller
 
     public function create(Request $request): Response
     {
-        return Inertia::render('Custodianships/Create', [
+        return Inertia::render('Custodianships/Form', [
             'user' => UserResource::make($request->user())->resolve(),
             'intervalUnits' => IntervalUnit::toArray(),
         ]);
@@ -96,8 +99,59 @@ class CustodianshipController extends Controller
         ]);
     }
 
-    public function edit($id): Response
+    public function edit(EditCustodianshipRequest $request, Custodianship $custodianship): Response
     {
-        return Inertia::render('Custodianships/Edit');
+        $custodianship->load([
+            'recipients',
+            'message',
+        ]);
+
+        return Inertia::render('Custodianships/Form', [
+            'user' => UserResource::make($request->user())->resolve(),
+            'custodianship' => CustodianshipResource::make($custodianship)->resolve(),
+            'intervalUnits' => IntervalUnit::toArray(),
+        ]);
+    }
+
+    public function update(UpdateCustodianshipRequest $request, Custodianship $custodianship): RedirectResponse
+    {
+        $custodianship = DB::transaction(function () use ($request, $custodianship) {
+            $intervalUnit = IntervalUnit::from($request->validated('intervalUnit'));
+            $interval = $intervalUnit->toIso8601($request->validated('intervalValue'));
+
+            $custodianship->update([
+                'name' => $request->validated('name'),
+                'interval' => $interval,
+            ]);
+
+            if ($request->has('messageContent')) {
+                $messageContent = $request->validated('messageContent');
+
+                if ($custodianship->message) {
+                    $custodianship->message->update(['content' => $messageContent]);
+                } else {
+                    $custodianship->message()->create(['content' => $messageContent]);
+                }
+            }
+
+            $existingEmails = $custodianship->recipients->pluck('email')->toArray();
+            $newEmails = array_filter($request->validated('recipients', []));
+
+            $emailsToRemove = array_diff($existingEmails, $newEmails);
+            if (! empty($emailsToRemove)) {
+                $custodianship->recipients()->whereIn('email', $emailsToRemove)->delete();
+            }
+
+            $emailsToAdd = array_diff($newEmails, $existingEmails);
+            foreach ($emailsToAdd as $email) {
+                $custodianship->recipients()->create(['email' => $email]);
+            }
+
+            return $custodianship;
+        });
+
+        return redirect()
+            ->route('custodianships.show', $custodianship)
+            ->with('success', 'Custodianship updated successfully.');
     }
 }

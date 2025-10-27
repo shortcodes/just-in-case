@@ -16,7 +16,7 @@ import dayjs from 'dayjs'
 const props = defineProps<CustodianshipsIndexPageProps>()
 
 // Local state
-const isResetting = ref<Record<number, boolean>>({})
+const isResetting = ref<Record<string, boolean>>({})
 const isResendingVerification = ref(false)
 
 // Computed properties
@@ -55,16 +55,16 @@ const handleCreateNew = () => {
     router.visit(route('custodianships.create'))
 }
 
-const handleReset = (custodianshipId: number) => {
-    isResetting.value[custodianshipId] = true
+const handleReset = (custodianshipUuid: string) => {
+    isResetting.value[custodianshipUuid] = true
 
-    router.post(route('custodianships.reset', custodianshipId), {}, {
+    router.post(route('custodianships.reset', custodianshipUuid), {}, {
         preserveState: false,
         onSuccess: () => {
-            isResetting.value[custodianshipId] = false
+            isResetting.value[custodianshipUuid] = false
         },
         onError: () => {
-            isResetting.value[custodianshipId] = false
+            isResetting.value[custodianshipUuid] = false
         }
     })
 }
@@ -72,26 +72,23 @@ const handleReset = (custodianshipId: number) => {
 const handleResendVerification = () => {
     isResendingVerification.value = true
 
-    // In production, this would be a POST request
-    // router.post(route('verification.send'), {}, {
-    //     onSuccess: () => {
-    //         isResendingVerification.value = false
-    //     },
-    //     onError: () => {
-    //         isResendingVerification.value = false
-    //     }
-    // })
+    router.post(route('verification.send'), {}, {
+        onSuccess: () => {
+            isResendingVerification.value = false
+        },
+        onError: () => {
+            isResendingVerification.value = false
+        }
+    })
 
-    // For development, simulate success
     setTimeout(() => {
         isResendingVerification.value = false
-        alert('Verification email sent!')
     }, 1000)
 }
 
 const handleResetAll = () => {
     if (confirm(`Are you sure you want to reset ${expiringCustodianships.value.length} custodianships?`)) {
-        expiringCustodianships.value.forEach(c => handleReset(c.id))
+        expiringCustodianships.value.forEach(c => handleReset(c.uuid))
     }
 }
 
@@ -129,12 +126,11 @@ const handleActivate = (custodianshipId: number) => {
             ]"
         />
 
-<!--        &lt;!&ndash; Email Verification Banner &ndash;&gt;-->
-<!--        <EmailVerificationBanner-->
-<!--            v-if="showEmailBanner"-->
-<!--            :user-email="props.user.email"-->
-<!--            @resend="handleResendVerification"-->
-<!--        />-->
+        <EmailVerificationBanner
+            v-if="showEmailBanner"
+            :user-email="props.user.email"
+            @resend="handleResendVerification"
+        />
 
         <!-- Header -->
         <div class="mb-8">
@@ -186,7 +182,7 @@ const handleActivate = (custodianshipId: number) => {
                 v-for="custodianship in props.custodianships"
                 :key="custodianship.id"
                 :custodianship="custodianship"
-                :is-resetting="isResetting[custodianship.id] || false"
+                :is-resetting="isResetting[custodianship.uuid] || false"
                 :email-verified="props.user.emailVerified"
                 @reset="handleReset"
                 @activate="handleActivate"

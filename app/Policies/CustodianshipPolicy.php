@@ -35,6 +35,11 @@ class CustodianshipPolicy
         return $user->id === $custodianship->user_id;
     }
 
+    public function activate(User $user, Custodianship $custodianship): bool
+    {
+        return $user->id === $custodianship->user_id;
+    }
+
     public function restore(User $user, Custodianship $custodianship): bool
     {
         return $user->id === $custodianship->user_id;

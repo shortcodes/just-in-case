@@ -26,7 +26,14 @@ class CustodianshipResource extends JsonResource
             'lastResetAt' => $this->last_reset_at?->toISOString(),
             'nextTriggerAt' => $this->next_trigger_at?->toISOString(),
             'activatedAt' => $this->activated_at?->toISOString(),
-            'recipients' => RecipientResource::collection($this->whenLoaded('recipients')),
+            'recipients' => $this->when(
+                $this->relationLoaded('recipients'),
+                fn () => $this->recipients->map(fn ($recipient) => [
+                    'id' => $recipient->id,
+                    'email' => $recipient->email,
+                    'createdAt' => $recipient->created_at->toISOString(),
+                ])->toArray()
+            ),
             'messageContent' => $this->whenLoaded('message', fn () => $this->message?->content),
             'attachments' => [],
             'resetCount' => $this->when($this->relationLoaded('resets'), fn () => $this->resets->count()),

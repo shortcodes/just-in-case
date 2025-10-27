@@ -11,23 +11,72 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import StorageIndicator from '@/Components/StorageIndicator.vue'
-import type { CreateCustodianshipPageProps, TempAttachment, CreateCustodianshipFormData } from '@/types/models'
+import type { CreateCustodianshipPageProps, EditCustodianshipPageProps, TempAttachment, CreateCustodianshipFormData } from '@/types/models'
 
-const props = defineProps<CreateCustodianshipPageProps>()
+type CustodianshipFormProps = CreateCustodianshipPageProps | EditCustodianshipPageProps
 
-const breadcrumbs = [
-    { label: 'Custodianships', href: '/custodianships' },
-    { label: 'Create New' },
-]
+const props = defineProps<CustodianshipFormProps>()
 
-const form = useForm<CreateCustodianshipFormData>({
-    name: '',
-    messageContent: null,
-    intervalValue: 90,
-    intervalUnit: 'days',
-    recipients: [],
-    attachments: [],
-})
+const isEditMode = computed(() => 'custodianship' in props)
+
+const parseIntervalDays = (days: number): { value: number, unit: string } => {
+    const totalMinutes = days * 24 * 60
+
+    // If less than 1 hour, use minutes
+    if (totalMinutes < 60) {
+        return { value: Math.round(totalMinutes), unit: 'minutes' }
+    }
+
+    // If less than 1 day, use hours
+    if (days < 1) {
+        const hours = totalMinutes / 60
+        return { value: Math.round(hours), unit: 'hours' }
+    }
+
+    // Otherwise use days
+    return { value: Math.round(days), unit: 'days' }
+}
+
+const getInitialFormData = (): CreateCustodianshipFormData => {
+    if (isEditMode.value && 'custodianship' in props) {
+        const { custodianship } = props as EditCustodianshipPageProps
+        const interval = parseIntervalDays(custodianship.intervalDays || 90)
+
+        const recipients = Array.isArray(custodianship.recipients)
+            ? custodianship.recipients.map(r => r.email)
+            : []
+
+        return {
+            name: custodianship.name,
+            messageContent: custodianship.messageContent || null,
+            intervalValue: interval.value,
+            intervalUnit: interval.unit,
+            recipients,
+            attachments: [],
+        }
+    }
+    return {
+        name: '',
+        messageContent: null,
+        intervalValue: 90,
+        intervalUnit: 'days',
+        recipients: [],
+        attachments: [],
+    }
+}
+
+const breadcrumbs = computed(() => [
+    { label: 'Custodianships', href: route('custodianships.index') },
+    ...(isEditMode.value && 'custodianship' in props
+        ? [
+            { label: (props as EditCustodianshipPageProps).custodianship.name, href: route('custodianships.show', (props as EditCustodianshipPageProps).custodianship.uuid) },
+            { label: 'Edit' }
+        ]
+        : [{ label: 'Create New' }]
+    ),
+])
+
+const form = useForm<CreateCustodianshipFormData>(getInitialFormData())
 
 const uploadedAttachments = ref<TempAttachment[]>([])
 const isDragging = ref(false)
@@ -38,28 +87,51 @@ const totalAttachmentSize = computed(() => {
 })
 
 const showDraftInfoBanner = computed(() => {
-    return true
+    return !isEditMode.value
 })
 
 const canAddRecipient = computed(() => form.recipients.length < 2)
 const canAddFiles = computed(() => totalAttachmentSize.value < 10485760)
 
+const pageTitle = computed(() => isEditMode.value ? 'Edit Custodianship' : 'Create New Custodianship')
+const pageDescription = computed(() =>
+    isEditMode.value
+        ? 'Update your custodianship message and settings.'
+        : 'Set up a new message that will be sent to your recipients if you don\'t check in regularly.'
+)
+
 function handleSubmit() {
+    const custodianshipId = isEditMode.value && 'custodianship' in props
+        ? (props as EditCustodianshipPageProps).custodianship.uuid
+        : null
+
     form.transform((data) => ({
         ...data,
         attachments: uploadedAttachments.value.map(a => a.id),
-    })).post(route('custodianships.store'), {
-        preserveScroll: true,
-    })
+    }))
+
+    if (isEditMode.value && custodianshipId) {
+        form.patch(route('custodianships.update', custodianshipId), {
+            preserveScroll: true,
+        })
+    } else {
+        form.post(route('custodianships.store'), {
+            preserveScroll: true,
+        })
+    }
 }
 
 function handleCancel() {
+    const returnRoute = isEditMode.value && 'custodianship' in props
+        ? route('custodianships.show', (props as EditCustodianshipPageProps).custodianship.uuid)
+        : route('custodianships.index')
+
     if (form.isDirty) {
         if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-            router.visit(route('custodianships.index'))
+            router.visit(returnRoute)
         }
     } else {
-        router.visit(route('custodianships.index'))
+        router.visit(returnRoute)
     }
 }
 
@@ -141,7 +213,7 @@ function openFileDialog() {
 </script>
 
 <template>
-    <Head title="Create New Custodianship" />
+    <Head :title="pageTitle" />
 
     <AuthenticatedLayout>
         <div class="space-y-6">
@@ -154,9 +226,9 @@ function openFileDialog() {
             </Alert>
 
             <div>
-                <h1 class="text-2xl font-semibold text-gray-900">Create New Custodianship</h1>
+                <h1 class="text-2xl font-semibold text-gray-900">{{ pageTitle }}</h1>
                 <p class="mt-1 text-sm text-gray-600">
-                    Set up a new message that will be sent to your recipients if you don't check in regularly.
+                    {{ pageDescription }}
                 </p>
             </div>
 

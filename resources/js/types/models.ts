@@ -95,6 +95,12 @@ export interface CreateCustodianshipPageProps {
     intervalUnits: IntervalUnitOption[]
 }
 
+export interface EditCustodianshipPageProps {
+    user: UserViewModel
+    custodianship: CustodianshipViewModel
+    intervalUnits: IntervalUnitOption[]
+}
+
 /**
  * Types for Show Custodianship View
  */

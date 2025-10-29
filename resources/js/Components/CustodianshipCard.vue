@@ -112,7 +112,8 @@ const missingRecipientOrMessage = computed(() => {
 })
 
 const showTimer = computed(() => {
-    return props.custodianship.status === 'active'
+    // Only show the live countdown while active and not yet expired
+    return props.custodianship.status === 'active' && !isExpired.value
 })
 
 const timerColorClass = computed(() => {
@@ -137,6 +138,11 @@ const formatInterval = (interval: string) => {
         return `${days} day interval`
     }
 }
+
+// Display status aligns with Show page: once expired, show as pending
+const displayStatus = computed(() => {
+    return isExpired.value ? 'pending' : props.custodianship.status
+})
 </script>
 
 <template>
@@ -164,7 +170,7 @@ const formatInterval = (interval: string) => {
                     </div>
                     <StatusBadge
                         v-else
-                        :status="isExpired ? 'completed' : custodianship.status"
+                        :status="displayStatus"
                         :delivery-status="custodianship.deliveryStatus"
                     />
                 </div>

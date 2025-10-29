@@ -6,6 +6,7 @@ import type { CustodianshipDetailViewModel } from '@/types/models'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { parseIntervalToDays } from '@/composables/useInterval'
 
 dayjs.extend(relativeTime)
 
@@ -72,6 +73,24 @@ const timerExpiresIn = computed(() => {
     if (days === 0) return 'Less than 1 day'
     return `${days} ${days === 1 ? 'day' : 'days'}`
 })
+
+const formattedInterval = computed(() => {
+    const intervalDays = parseIntervalToDays(props.custodianship.interval)
+    const totalMinutes = intervalDays * 24 * 60
+
+    if (totalMinutes < 60) {
+        const minutes = Math.max(1, Math.round(totalMinutes))
+        return `${minutes} minute${minutes === 1 ? '' : 's'}`
+    }
+
+    if (totalMinutes < 24 * 60) {
+        const hours = Math.max(1, Math.round(totalMinutes / 60))
+        return `${hours} hour${hours === 1 ? '' : 's'}`
+    }
+
+    const days = Math.max(1, Math.round(intervalDays))
+    return `${days} day${days === 1 ? '' : 's'}`
+})
 </script>
 
 <template>
@@ -82,7 +101,7 @@ const timerExpiresIn = computed(() => {
         <CardContent class="space-y-4">
             <TimerProgressBar
                 :next-trigger-at="custodianship.nextTriggerAt"
-                :interval-days="custodianship.intervalDays"
+                :interval="custodianship.interval"
                 :status="custodianship.status"
             />
 
@@ -110,6 +129,11 @@ const timerExpiresIn = computed(() => {
                 <div v-if="nextTriggerText" class="flex items-center justify-between">
                     <span class="font-medium">Next trigger:</span>
                     <span class="text-gray-900">{{ nextTriggerText }}</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">Check-in interval:</span>
+                    <span class="text-gray-900">{{ formattedInterval }}</span>
                 </div>
 
                 <div v-if="timerExpiresIn && timerExpiresIn !== 'Expired'" class="flex items-center justify-between">

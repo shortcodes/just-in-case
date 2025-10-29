@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Recipient extends Model
 {
@@ -19,5 +21,15 @@ class Recipient extends Model
     public function custodianship(): BelongsTo
     {
         return $this->belongsTo(Custodianship::class);
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Delivery::class);
+    }
+
+    public function latestDelivery(): HasOne
+    {
+        return $this->hasOne(Delivery::class)->latestOfMany();
     }
 }

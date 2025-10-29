@@ -1,7 +1,7 @@
 # Schemat Bazy Danych MySQL - Just In Case MVP
 
-**Wersja:** 1.0
-**Data:** 2025-10-18
+**Wersja:** 1.1
+**Data:** 2025-10-29
 **Status:** Zatwierdzona struktura bazy danych
 
 ---
@@ -161,7 +161,7 @@ Struktura Spatie laravel-medialibrary.
 **Indeksy:**
 - PRIMARY KEY: `id`
 - INDEX: `mailgun_message_id`
-- **COMPOSITE INDEX**: `(custodianship_id, recipient_id, final_status)`
+- **COMPOSITE INDEX**: `(custodianship_id, recipient_id, status)`
 
 **Foreign Keys:**
 - `custodianship_id` REFERENCES `custodianships(id)` ON DELETE CASCADE

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class Custodianship extends Model
@@ -70,6 +71,11 @@ class Custodianship extends Model
         return $this->hasMany(Recipient::class);
     }
 
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Delivery::class);
+    }
+
     public function resets(): HasMany
     {
         return $this->hasMany(Reset::class);
@@ -77,15 +83,22 @@ class Custodianship extends Model
 
     public function scopeOrderByDefault(Builder $query): Builder
     {
+        $now = Carbon::now();
+
         return $query
             ->orderByRaw("
                 CASE status
-                    WHEN 'active' THEN 1
+                    WHEN 'active' THEN
+                        CASE
+                            WHEN next_trigger_at IS NULL OR next_trigger_at >= ? THEN 0
+                            WHEN next_trigger_at < ? THEN 1
+                            ELSE 1
+                        END
                     WHEN 'draft' THEN 2
                     WHEN 'completed' THEN 3
                     ELSE 4
                 END
-            ")
+            ", [$now, $now])
             ->orderByRaw("
                 CASE
                     WHEN status = 'active' THEN next_trigger_at

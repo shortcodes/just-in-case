@@ -14,10 +14,21 @@ export interface UserViewModel {
     createdAt: string
 }
 
+export interface DeliveryViewModel {
+    id: number
+    status: 'pending' | 'delivered' | 'failed'
+    mailgunMessageId: string | null
+    recipientEmail: string
+    deliveredAt: string | null
+    createdAt: string
+    updatedAt: string
+}
+
 export interface RecipientViewModel {
     id: number
     email: string
     createdAt: string
+    latestDelivery?: DeliveryViewModel | null
 }
 
 export interface AttachmentViewModel {

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { router, usePage } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import StatusBadge from '@/Components/StatusBadge.vue'
 import TimerSection from '@/Components/TimerSection.vue'
 import MessageContentViewer from '@/Components/MessageContentViewer.vue'
@@ -13,7 +14,8 @@ import DeleteCustodianshipModal from '@/Components/DeleteCustodianshipModal.vue'
 import DangerZone from '@/Components/DangerZone.vue'
 import ConfirmableButton from '@/Components/ConfirmableButton.vue'
 import { PencilIcon, ArrowPathIcon, ChevronDownIcon, ChevronUpIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
-import type { ShowCustodianshipPageProps } from '@/types/models'
+import type { RecipientViewModel, ShowCustodianshipPageProps } from '@/types/models'
+import { parseIntervalToDays } from '@/composables/useInterval'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
@@ -50,6 +52,26 @@ const breadcrumbs = computed(() => [
     { name: 'Custodianships', href: route('custodianships.index') },
     { name: custodianship.value.name, href: '#', current: true }
 ])
+
+const formatInterval = (interval: string) => {
+    const intervalDays = parseIntervalToDays(interval)
+    const totalMinutes = intervalDays * 24 * 60
+
+    if (totalMinutes < 60) {
+        const roundedMinutes = Math.max(1, Math.round(totalMinutes))
+        return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'}`
+    }
+
+    if (totalMinutes < 24 * 60) {
+        const hours = Math.max(1, Math.round(totalMinutes / 60))
+        return `${hours} hour${hours === 1 ? '' : 's'}`
+    }
+
+    const days = Math.max(1, Math.round(intervalDays))
+    return `${days} day${days === 1 ? '' : 's'}`
+}
+
+const formattedInterval = computed(() => formatInterval(custodianship.value.interval))
 
 const handleReset = async () => {
     if (!canReset.value) return
@@ -105,6 +127,51 @@ const handleDelete = async () => {
 const toggleHistory = () => {
     isHistoryExpanded.value = !isHistoryExpanded.value
 }
+
+type RecipientDeliveryStatus = 'pending' | 'delivered' | 'failed'
+
+const getLatestRecipientDeliveryStatus = (recipient: RecipientViewModel): RecipientDeliveryStatus => {
+    return (recipient.latestDelivery?.status ?? 'pending') as RecipientDeliveryStatus
+}
+
+const recipientStatusLabel = (recipient: RecipientViewModel): string => {
+    const status = getLatestRecipientDeliveryStatus(recipient)
+
+    if (status === 'delivered') return 'Delivered'
+    if (status === 'failed') return 'Delivery Failed'
+
+    return 'Pending Delivery'
+}
+
+const recipientStatusClass = (recipient: RecipientViewModel): string => {
+    const status = getLatestRecipientDeliveryStatus(recipient)
+
+    if (status === 'delivered') {
+        return 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-50 font-medium'
+    }
+
+    if (status === 'failed') {
+        return 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-50 font-medium'
+    }
+
+    return 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-50 font-medium'
+}
+
+const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null => {
+    const status = getLatestRecipientDeliveryStatus(recipient)
+
+    if (status === 'pending') {
+        return null
+    }
+
+    const updatedAt = recipient.latestDelivery?.updatedAt
+
+    if (!updatedAt) {
+        return null
+    }
+
+    return dayjs(updatedAt).fromNow()
+}
 </script>
 
 <template>
@@ -159,37 +226,27 @@ const toggleHistory = () => {
                     </p>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <Button
+                    <Button v-if="!isExpired"
                         variant="outline"
                         @click="handleEdit"
                     >
                         <PencilIcon class="h-4 w-4 mr-2" />
                         Edit
                     </Button>
-                    <ConfirmableButton
-                        v-if="custodianship.status === 'active'"
-                        label="Reset Timer"
-                        confirm-label="Confirm Reset"
-                        :disabled="!canReset || isResetting"
-                        :tooltip-disabled="isExpired ? 'Cannot reset - message will be sent shortly' : ''"
-                        @confirm="handleReset"
-                        class="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                        <template #icon>
-                            <ArrowPathIcon :class="['h-4 w-4 mr-2', isResetting ? 'animate-spin' : '']" />
-                        </template>
-                    </ConfirmableButton>
+<!--                    <ConfirmableButton-->
+<!--                        v-if="custodianship.status === 'active'"-->
+<!--                        label="Reset Timer"-->
+<!--                        confirm-label="Confirm Reset"-->
+<!--                        :disabled="!canReset || isResetting"-->
+<!--                        :tooltip-disabled="isExpired ? 'Cannot reset - message will be sent shortly' : ''"-->
+<!--                        @confirm="handleReset"-->
+<!--                        class="bg-green-600 hover:bg-green-700 text-white"-->
+<!--                    >-->
+<!--                        <template #icon>-->
+<!--                            <ArrowPathIcon :class="['h-4 w-4 mr-2', isResetting ? 'animate-spin' : '']" />-->
+<!--                        </template>-->
+<!--                    </ConfirmableButton>-->
                 </div>
-            </div>
-
-            <!-- Timer expired banner -->
-            <div
-                v-if="isExpired && custodianship.status === 'active'"
-                class="bg-amber-50 border border-amber-200 rounded-lg p-4"
-            >
-                <p class="text-sm text-amber-800 font-medium">
-                    Your timer has expired. The message will be sent shortly unless you reset it.
-                </p>
             </div>
 
             <!-- Delivery failed banner -->
@@ -204,7 +261,7 @@ const toggleHistory = () => {
 
             <div class="space-y-6">
                 <!-- Timer Section (only for active status) -->
-                <TimerSection v-if="custodianship.status === 'active'" :custodianship="custodianship" />
+                <TimerSection v-if="custodianship.status === 'active' && !isExpired" :custodianship="custodianship" />
 
                 <!-- Message Content Section -->
                 <Card>
@@ -231,12 +288,9 @@ const toggleHistory = () => {
                             </div>
                         </div>
                         <div class="pt-4 border-t">
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-600">Check-in Interval</span>
-                                <span class="font-medium text-gray-900">
-                                    {{ custodianship.intervalDays }} days
-                                </span>
-                            </div>
+                            <p class="text-xs italic text-gray-400">
+                                Message content is delivered as plain text to recipients when the timer expires.
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -253,7 +307,22 @@ const toggleHistory = () => {
                                 :key="recipient.id"
                                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                             >
-                                <span class="text-sm text-gray-900">{{ recipient.email }}</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-medium text-gray-900">
+                                        {{ recipient.email }}
+                                    </span>
+                                    <template v-if="isExpired">
+                                        <Badge :class="recipientStatusClass(recipient)">
+                                            {{ recipientStatusLabel(recipient) }}
+                                        </Badge>
+                                        <span
+                                            v-if="recipientStatusUpdatedAt(recipient)"
+                                            class="text-xs text-gray-500"
+                                        >
+                                            Updated {{ recipientStatusUpdatedAt(recipient) }}
+                                        </span>
+                                    </template>
+                                </div>
                                 <span class="text-xs text-gray-500">
                                     Added {{ dayjs(recipient.createdAt).fromNow() }}
                                 </span>
@@ -303,7 +372,10 @@ const toggleHistory = () => {
             </Card>
 
             <!-- Danger Zone -->
-            <DangerZone @delete="isDeleteModalOpen = true" />
+            <DangerZone
+                :disabled="statusDisplay === 'pending'"
+                @delete="isDeleteModalOpen = true"
+            />
         </div>
 
         <!-- Delete Confirmation Modal -->

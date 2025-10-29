@@ -77,7 +77,7 @@ class CustodianshipController extends Controller
     public function show(ShowCustodianshipRequest $request, Custodianship $custodianship): Response
     {
         $custodianship->load([
-            'recipients',
+            'recipients.latestDelivery',
             'message',
             'resets',
             'user',

@@ -32,6 +32,17 @@ class CustodianshipResource extends JsonResource
                     'id' => $recipient->id,
                     'email' => $recipient->email,
                     'createdAt' => $recipient->created_at->toISOString(),
+                    'latestDelivery' => $recipient->relationLoaded('latestDelivery') && $recipient->latestDelivery
+                        ? [
+                            'id' => $recipient->latestDelivery->id,
+                            'status' => $recipient->latestDelivery->status,
+                            'mailgunMessageId' => $recipient->latestDelivery->mailgun_message_id,
+                            'recipientEmail' => $recipient->latestDelivery->recipient_email,
+                            'deliveredAt' => $recipient->latestDelivery->delivered_at?->toISOString(),
+                            'createdAt' => $recipient->latestDelivery->created_at->toISOString(),
+                            'updatedAt' => $recipient->latestDelivery->updated_at->toISOString(),
+                        ]
+                        : null,
                 ])->toArray()
             ),
             'messageContent' => $this->whenLoaded('message', fn () => $this->message?->content),

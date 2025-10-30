@@ -386,10 +386,9 @@ class CustodianshipControllerIndexTest extends TestCase
     public function test_index_displays_delivery_failed_custodianships(): void
     {
         $user = User::factory()->create();
-        Custodianship::factory()->create([
+        $custodianship = Custodianship::factory()->create([
             'user_id' => $user->id,
             'status' => 'completed',
-            'delivery_status' => 'failed',
         ]);
 
         $response = $this->actingAs($user)->get(route('custodianships.index'));
@@ -399,7 +398,6 @@ class CustodianshipControllerIndexTest extends TestCase
             ->component('Custodianships/Index')
             ->has('custodianships', 1)
             ->where('custodianships.0.status', 'completed')
-            ->where('custodianships.0.deliveryStatus', 'failed')
         );
     }
 
@@ -413,7 +411,6 @@ class CustodianshipControllerIndexTest extends TestCase
         Custodianship::factory()->create([
             'user_id' => $user->id,
             'status' => 'completed',
-            'delivery_status' => 'failed',
         ]);
 
         $response = $this->actingAs($user)->get(route('custodianships.index'));

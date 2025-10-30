@@ -39,7 +39,7 @@ class ActivateCustodianshipTest extends TestCase
             ->actingAs($user)
             ->post(route('custodianships.activate', $custodianship));
 
-        $response->assertRedirect(route('custodianships.show', $custodianship));
+        $response->assertRedirect(route('custodianships.index'));
         $response->assertSessionHas('success', 'Custodianship activated successfully.');
 
         $custodianship->refresh();
@@ -244,7 +244,7 @@ class ActivateCustodianshipTest extends TestCase
             ->actingAs($user)
             ->post(route('custodianships.activate', $custodianship));
 
-        $response->assertRedirect(route('custodianships.show', $custodianship));
+        $response->assertRedirect(route('custodianships.index'));
 
         $custodianship->refresh();
 

@@ -26,7 +26,7 @@ class CreateCustodianshipTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
-            ->component('Custodianships/Create')
+            ->component('Custodianships/Form')
             ->has('user')
             ->has('intervalUnits')
         );

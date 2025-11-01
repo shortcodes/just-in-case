@@ -5,13 +5,12 @@
  */
 
 import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
-import dayjs from 'dayjs'
+import dayjs from '@/plugins/dayjs'
 import duration from 'dayjs/plugin/duration'
-import relativeTime from 'dayjs/plugin/relativeTime'
 import { parseIntervalToDays } from './useInterval'
+import { useDateFormat } from './useDateFormat'
 
 dayjs.extend(duration)
-dayjs.extend(relativeTime)
 
 export interface UseTimerCountdownReturn {
     daysRemaining: Ref<number>
@@ -32,6 +31,7 @@ export function useTimerCountdown(
     const now = ref(dayjs())
     let intervalId: number | null = null
     let isVisible = ref(true)
+    const { formatDate } = useDateFormat()
 
     const totalSecondsRemaining = computed(() => {
         if (!nextTriggerAt) return 0
@@ -81,7 +81,7 @@ export function useTimerCountdown(
 
     const exactExpiryDate = computed(() => {
         if (!nextTriggerAt) return ''
-        return dayjs(nextTriggerAt).format('MMMM D, YYYY HH:mm')
+        return formatDate(nextTriggerAt, true)
     })
 
     const detailedCountdown = computed(() => {

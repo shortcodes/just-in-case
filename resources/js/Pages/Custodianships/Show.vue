@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import {Head, router} from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,31 +12,24 @@ import AttachmentList from '@/Components/AttachmentList.vue'
 import ResetHistoryTable from '@/Components/ResetHistoryTable.vue'
 import DeleteCustodianshipModal from '@/Components/DeleteCustodianshipModal.vue'
 import DangerZone from '@/Components/DangerZone.vue'
-import ConfirmableButton from '@/Components/ConfirmableButton.vue'
-import { PencilIcon, ArrowPathIcon, ChevronDownIcon, ChevronUpIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+import CustodianshipActions from '@/Components/CustodianshipActions.vue'
+import CustodianshipTimer from '@/Components/CustodianshipTimer.vue'
+import { PencilIcon, ChevronDownIcon, ChevronUpIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import type { RecipientViewModel, ShowCustodianshipPageProps } from '@/types/models'
 import { parseIntervalToDays } from '@/composables/useInterval'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-
-dayjs.extend(relativeTime)
+import { useTrans } from '@/composables/useTrans'
+import dayjs from '@/plugins/dayjs'
 
 const props = defineProps<ShowCustodianshipPageProps>()
+const trans = useTrans()
 
 const custodianship = ref(props.custodianship)
 const resetHistory = ref(props.resetHistory || [])
 
-const isResetting = ref(false)
 const isDeleting = ref(false)
 const isDeleteModalOpen = ref(false)
 const isHistoryExpanded = ref(false)
 const isMessageVisible = ref(false)
-
-const canReset = computed(() => {
-    if (custodianship.value.status !== 'active') return false
-    if (!custodianship.value.nextTriggerAt) return false
-    return !dayjs(custodianship.value.nextTriggerAt).isBefore(dayjs())
-})
 
 const isExpired = computed(() => {
     if (!custodianship.value.nextTriggerAt) return false
@@ -49,7 +42,7 @@ const statusDisplay = computed(() => {
 })
 
 const breadcrumbs = computed(() => [
-    { name: 'Custodianships', href: route('custodianships.index') },
+    { name: trans('Custodianships'), href: route('custodianships.index') },
     { name: custodianship.value.name, href: '#', current: true }
 ])
 
@@ -59,49 +52,22 @@ const formatInterval = (interval: string) => {
 
     if (totalMinutes < 60) {
         const roundedMinutes = Math.max(1, Math.round(totalMinutes))
-        return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'}`
+        const unit = roundedMinutes === 1 ? trans('minute') : trans('minutes')
+        return `${roundedMinutes} ${unit}`
     }
 
     if (totalMinutes < 24 * 60) {
         const hours = Math.max(1, Math.round(totalMinutes / 60))
-        return `${hours} hour${hours === 1 ? '' : 's'}`
+        const unit = hours === 1 ? trans('hour') : trans('hours')
+        return `${hours} ${unit}`
     }
 
     const days = Math.max(1, Math.round(intervalDays))
-    return `${days} day${days === 1 ? '' : 's'}`
+    const unit = days === 1 ? trans('day') : trans('days')
+    return `${days} ${unit}`
 }
 
 const formattedInterval = computed(() => formatInterval(custodianship.value.interval))
-
-const handleReset = async () => {
-    if (!canReset.value) return
-
-    isResetting.value = true
-
-    const oldLastResetAt = custodianship.value.lastResetAt
-    const oldNextTriggerAt = custodianship.value.nextTriggerAt
-
-    custodianship.value.lastResetAt = dayjs().toISOString()
-    custodianship.value.nextTriggerAt = dayjs()
-        .add(custodianship.value.intervalDays, 'day')
-        .toISOString()
-
-    try {
-        await router.post(
-            route('custodianships.reset', custodianship.value.uuid),
-            {},
-            {
-                preserveScroll: true,
-                onError: () => {
-                    custodianship.value.lastResetAt = oldLastResetAt
-                    custodianship.value.nextTriggerAt = oldNextTriggerAt
-                }
-            }
-        )
-    } finally {
-        isResetting.value = false
-    }
-}
 
 const handleEdit = () => {
     router.visit(route('custodianships.edit', custodianship.value.uuid))
@@ -137,10 +103,10 @@ const getLatestRecipientDeliveryStatus = (recipient: RecipientViewModel): Recipi
 const recipientStatusLabel = (recipient: RecipientViewModel): string => {
     const status = getLatestRecipientDeliveryStatus(recipient)
 
-    if (status === 'delivered') return 'Delivered'
-    if (status === 'failed') return 'Delivery Failed'
+    if (status === 'delivered') return trans('Delivered')
+    if (status === 'failed') return trans('Delivery Failed')
 
-    return 'Pending Delivery'
+    return trans('Pending Delivery')
 }
 
 const recipientStatusClass = (recipient: RecipientViewModel): string => {
@@ -175,6 +141,8 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
 </script>
 
 <template>
+    <Head :title="trans('Custodianship') + ' - ' + custodianship.name"/>
+
     <AuthenticatedLayout>
         <div class="space-y-6">
             <!-- Breadcrumbs -->
@@ -222,30 +190,22 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                         />
                     </div>
                     <p v-if="custodianship.resetCount" class="text-sm text-gray-500">
-                        Reset {{ custodianship.resetCount }} times
+                        {{ trans('Reset :count times').replace(':count', custodianship.resetCount.toString()) }}
                     </p>
                 </div>
                 <div class="flex items-center space-x-3">
+                    <CustodianshipActions
+                        :custodianship="custodianship"
+                        :email-verified="user.emailVerified"
+                    />
+
                     <Button v-if="!isExpired"
                         variant="outline"
                         @click="handleEdit"
                     >
                         <PencilIcon class="h-4 w-4 mr-2" />
-                        Edit
+                        {{ trans('Edit') }}
                     </Button>
-<!--                    <ConfirmableButton-->
-<!--                        v-if="custodianship.status === 'active'"-->
-<!--                        label="Reset Timer"-->
-<!--                        confirm-label="Confirm Reset"-->
-<!--                        :disabled="!canReset || isResetting"-->
-<!--                        :tooltip-disabled="isExpired ? 'Cannot reset - message will be sent shortly' : ''"-->
-<!--                        @confirm="handleReset"-->
-<!--                        class="bg-green-600 hover:bg-green-700 text-white"-->
-<!--                    >-->
-<!--                        <template #icon>-->
-<!--                            <ArrowPathIcon :class="['h-4 w-4 mr-2', isResetting ? 'animate-spin' : '']" />-->
-<!--                        </template>-->
-<!--                    </ConfirmableButton>-->
                 </div>
             </div>
 
@@ -255,7 +215,7 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                 class="bg-red-50 border border-red-200 rounded-lg p-4"
             >
                 <p class="text-sm text-red-800 font-medium">
-                    Email delivery failed. Please edit the custodianship to fix recipient email addresses.
+                    {{ trans('Email delivery failed. Please edit the custodianship to fix recipient email addresses.') }}
                 </p>
             </div>
 
@@ -267,7 +227,7 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                 <Card>
                     <CardHeader>
                         <div class="flex items-center justify-between">
-                            <CardTitle>Message Content</CardTitle>
+                            <CardTitle>{{ trans('Message Content') }}</CardTitle>
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -276,20 +236,20 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                             >
                                 <EyeIcon v-if="!isMessageVisible" class="h-4 w-4 mr-1" />
                                 <EyeSlashIcon v-else class="h-4 w-4 mr-1" />
-                                {{ isMessageVisible ? 'Hide' : 'Show' }}
+                                {{ isMessageVisible ? trans('Hide') : trans('Show') }}
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div>
-                            <MessageContentViewer v-if="isMessageVisible" :content="custodianship.messageContent" />
+                            <MessageContentViewer v-if="isMessageVisible" :content="custodianship.messageContent ?? null" />
                             <div v-else class="text-center py-8 text-gray-400 italic">
-                                Message content is hidden for privacy
+                                {{ trans('Message content is hidden for privacy') }}
                             </div>
                         </div>
                         <div class="pt-4 border-t">
                             <p class="text-xs italic text-gray-400">
-                                Message content is delivered as plain text to recipients when the timer expires.
+                                {{ trans('Message content is delivered as plain text to recipients when the timer expires.') }}
                             </p>
                         </div>
                     </CardContent>
@@ -298,7 +258,7 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                 <!-- Recipients Section -->
                 <Card>
                     <CardHeader>
-                        <CardTitle>Recipients ({{ custodianship.recipients?.length || 0 }})</CardTitle>
+                        <CardTitle>{{ trans('Recipients (:count)').replace(':count', (custodianship.recipients?.length || 0).toString()) }}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div v-if="custodianship.recipients && custodianship.recipients.length > 0" class="space-y-3">
@@ -319,17 +279,17 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                                             v-if="recipientStatusUpdatedAt(recipient)"
                                             class="text-xs text-gray-500"
                                         >
-                                            Updated {{ recipientStatusUpdatedAt(recipient) }}
+                                            {{ trans('Updated :time').replace(':time', recipientStatusUpdatedAt(recipient) || '') }}
                                         </span>
                                     </template>
                                 </div>
                                 <span class="text-xs text-gray-500">
-                                    Added {{ dayjs(recipient.createdAt).fromNow() }}
+                                    {{ trans('Added :time').replace(':time', dayjs(recipient.createdAt).fromNow()) }}
                                 </span>
                             </div>
                         </div>
                         <div v-else class="text-center py-8 text-gray-400 italic">
-                            (No recipients)
+                            {{ trans('(No recipients)') }}
                         </div>
                     </CardContent>
                 </Card>
@@ -337,7 +297,7 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                 <!-- Attachments Section -->
                 <Card>
                     <CardHeader>
-                        <CardTitle>Attachments ({{ custodianship.attachments?.length || 0 }})</CardTitle>
+                        <CardTitle>{{ trans('Attachments (:count)').replace(':count', (custodianship.attachments?.length || 0).toString()) }}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <AttachmentList
@@ -355,7 +315,7 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                         @click="toggleHistory"
                         class="flex items-center justify-between w-full text-left"
                     >
-                        <CardTitle>Reset History ({{ resetHistory.length }})</CardTitle>
+                        <CardTitle>{{ trans('Reset History (:count)').replace(':count', resetHistory.length.toString()) }}</CardTitle>
                         <ChevronDownIcon
                             v-if="!isHistoryExpanded"
                             class="h-5 w-5 text-gray-400"

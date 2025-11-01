@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Progress } from '@/components/ui/progress'
+import { useTrans } from '@/composables/useTrans'
 
 interface Props {
     usedSize: number // bytes
@@ -10,6 +11,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     maxSize: 10485760, // 10MB
 })
+
+const trans = useTrans()
 
 const percentage = computed(() => {
     return Math.round((props.usedSize / props.maxSize) * 100)
@@ -35,7 +38,7 @@ const formattedMax = computed(() => formatBytes(props.maxSize))
 <template>
     <div class="space-y-2">
         <div class="flex justify-between text-sm">
-            <span class="text-gray-700">Storage used</span>
+            <span class="text-gray-700">{{ trans('Storage used') }}</span>
             <span
                 class="font-medium"
                 :class="{

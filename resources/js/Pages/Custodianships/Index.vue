@@ -10,12 +10,13 @@ import ExpiringCustodianshipsBanner from '@/Components/ExpiringCustodianshipsBan
 import CustodianshipCard from '@/Components/CustodianshipCard.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 import type { CustodianshipsIndexPageProps } from '@/types/models'
-import dayjs from 'dayjs'
+import { useTrans } from '@/composables/useTrans'
+import dayjs from '@/plugins/dayjs'
 
 const props = defineProps<CustodianshipsIndexPageProps>()
+const trans = useTrans()
 
 // Local state
-const isResetting = ref<Record<string, boolean>>({})
 const isResendingVerification = ref(false)
 
 // Computed properties
@@ -47,25 +48,11 @@ const expiringCustodianships = computed(() => {
 const handleCreateNew = () => {
     if (!canCreateNew.value) {
         // Show limit modal
-        alert('You have reached the limit of 3 custodianships in the free plan. Delete an existing one to create a new one.')
+        alert(trans('You have reached the limit of 3 custodianships in the free plan. Delete an existing one to create a new one.'))
         return
     }
 
     router.visit(route('custodianships.create'))
-}
-
-const handleReset = (custodianshipUuid: string) => {
-    isResetting.value[custodianshipUuid] = true
-
-    router.post(route('custodianships.reset', custodianshipUuid), {}, {
-        preserveState: false,
-        onSuccess: () => {
-            isResetting.value[custodianshipUuid] = false
-        },
-        onError: () => {
-            isResetting.value[custodianshipUuid] = false
-        }
-    })
 }
 
 const handleResendVerification = () => {
@@ -84,29 +71,16 @@ const handleResendVerification = () => {
         isResendingVerification.value = false
     }, 1000)
 }
-
-const handleResetAll = () => {
-    if (confirm(`Are you sure you want to reset ${expiringCustodianships.value.length} custodianships?`)) {
-        expiringCustodianships.value.forEach(c => handleReset(c.uuid))
-    }
-}
-
-const handleActivate = (custodianshipUuid: string) => {
-    router.post(route('custodianships.activate', custodianshipUuid), {}, {
-        preserveScroll: true,
-        preserveState: false,
-    })
-}
 </script>
 
 <template>
-    <Head title="My Custodianships" />
+    <Head :title="trans('My Custodianships')" />
 
     <AuthenticatedLayout>
         <!-- Breadcrumbs -->
         <Breadcrumbs
             :items="[
-                { label: 'Custodianships' }
+                { label: trans('Custodianships') }
             ]"
         />
 
@@ -121,10 +95,10 @@ const handleActivate = (custodianshipUuid: string) => {
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex-1">
                     <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
-                        My Custodianships
+                        {{ trans('My Custodianships') }}
                     </h1>
                     <p class="mt-2 text-sm text-gray-600">
-                        Manage your secure messages and time-based deliveries
+                        {{ trans('Manage your secure messages and time-based deliveries') }}
                     </p>
                 </div>
                 <Button
@@ -133,7 +107,7 @@ const handleActivate = (custodianshipUuid: string) => {
                     size="lg"
                     class="w-full sm:w-auto shrink-0"
                 >
-                    Create New
+                    {{ trans('Create New') }}
                 </Button>
             </div>
         </div>
@@ -141,8 +115,8 @@ const handleActivate = (custodianshipUuid: string) => {
         <!-- Empty State -->
         <EmptyState
             v-if="isEmpty"
-            title="No custodianships yet"
-            description="Create your first custodianship to secure important information for your loved ones."
+            :title="trans('No custodianships yet')"
+            :description="trans('Create your first custodianship to secure important information for your loved ones.')"
         >
             <template #icon>
                 <InboxIcon class="h-12 w-12 text-gray-400" />
@@ -152,7 +126,7 @@ const handleActivate = (custodianshipUuid: string) => {
                     size="lg"
                     @click="handleCreateNew"
                 >
-                    Create Your First Custodianship
+                    {{ trans('Create Your First Custodianship') }}
                 </Button>
             </template>
         </EmptyState>
@@ -166,10 +140,7 @@ const handleActivate = (custodianshipUuid: string) => {
                 v-for="custodianship in props.custodianships"
                 :key="custodianship.id"
                 :custodianship="custodianship"
-                :is-resetting="isResetting[custodianship.uuid] || false"
                 :email-verified="props.user.emailVerified"
-                @reset="handleReset"
-                @activate="handleActivate"
             />
         </div>
     </AuthenticatedLayout>

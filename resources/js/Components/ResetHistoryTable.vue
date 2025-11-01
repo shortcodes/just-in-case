@@ -10,16 +10,15 @@ import {
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ResetLogViewModel } from '@/types/models'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-
-dayjs.extend(relativeTime)
+import dayjs from '@/plugins/dayjs'
+import { useDateFormat } from '@/composables/useDateFormat'
 
 interface ResetHistoryTableProps {
     resetHistory: ResetLogViewModel[]
 }
 
 const props = defineProps<ResetHistoryTableProps>()
+const { formatDate } = useDateFormat()
 
 const formatResetMethod = (method: string): string => {
     switch (method) {
@@ -35,13 +34,13 @@ const formatResetMethod = (method: string): string => {
 const formatTimestamp = (timestamp: string) => {
     return {
         relative: dayjs(timestamp).fromNow(),
-        exact: dayjs(timestamp).format('MMMM D, YYYY h:mm A')
+        exact: formatDate(timestamp, true)
     }
 }
 </script>
 
 <template>
-    <div v-if="resetHistory.length > 0" class="border rounded-lg overflow-hidden">
+    <div v-if="resetHistory.length > 0">
         <Table>
             <TableHeader>
                 <TableRow>

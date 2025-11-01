@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useTrans } from '@/composables/useTrans'
 import type { ConfirmableButtonProps } from '@/types/components'
 
+const trans = useTrans()
+
 const props = withDefaults(defineProps<ConfirmableButtonProps>(), {
-    confirmLabel: 'Confirm',
-    cancelLabel: 'Cancel',
+    confirmLabel: '',
+    cancelLabel: '',
     disabled: false,
     tooltipDisabled: '',
     size: 'default',
@@ -15,6 +18,9 @@ const props = withDefaults(defineProps<ConfirmableButtonProps>(), {
     cancelButtonClass: '',
 })
 
+const confirmLabelText = computed(() => props.confirmLabel || trans('Confirm'))
+const cancelLabelText = computed(() => props.cancelLabel || trans('Cancel'))
+
 const emit = defineEmits<{
     confirm: []
 }>()
@@ -22,6 +28,7 @@ const emit = defineEmits<{
 const isExpanded = ref(false)
 let collapseTimeout: number | null = null
 let clickOutsideListener: ((e: MouseEvent) => void) | null = null
+let addListenerTimeout: number | null = null
 
 const handleClick = () => {
     if (props.disabled) return
@@ -29,7 +36,7 @@ const handleClick = () => {
     isExpanded.value = true
 
     collapseTimeout = window.setTimeout(() => {
-        isExpanded.value = false
+        collapse()
     }, 5000)
 
     clickOutsideListener = (e: MouseEvent) => {
@@ -40,8 +47,11 @@ const handleClick = () => {
     }
 
     // Delay adding the listener to avoid immediate collapse
-    setTimeout(() => {
-        document.addEventListener('click', clickOutsideListener)
+    addListenerTimeout = window.setTimeout(() => {
+        if (clickOutsideListener) {
+            document.addEventListener('click', clickOutsideListener)
+        }
+        addListenerTimeout = null
     }, 100)
 }
 
@@ -60,6 +70,11 @@ const collapse = () => {
     if (collapseTimeout !== null) {
         clearTimeout(collapseTimeout)
         collapseTimeout = null
+    }
+
+    if (addListenerTimeout !== null) {
+        clearTimeout(addListenerTimeout)
+        addListenerTimeout = null
     }
 
     if (clickOutsideListener !== null) {
@@ -115,7 +130,7 @@ onUnmounted(() => {
                 :class="['bg-green-600 hover:bg-green-700 text-white', confirmButtonClass]"
                 @click="handleConfirm"
             >
-                {{ confirmLabel }}
+                {{ confirmLabelText }}
             </Button>
             <Button
                 variant="outline"
@@ -123,7 +138,7 @@ onUnmounted(() => {
                 :class="cancelButtonClass"
                 @click="handleCancel"
             >
-                {{ cancelLabel }}
+                {{ cancelLabelText }}
             </Button>
         </template>
     </div>

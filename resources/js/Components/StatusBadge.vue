@@ -2,8 +2,10 @@
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import type { StatusBadgeProps } from '@/types/components'
+import { useTrans } from '@/composables/useTrans'
 
 const props = defineProps<StatusBadgeProps>()
+const trans = useTrans()
 
 const badgeVariant = computed(() => {
     switch (props.status) {
@@ -48,14 +50,14 @@ const badgeClass = computed(() => {
 const statusLabel = computed(() => {
     // For completed status, show delivery status label
     if (props.status === 'completed') {
-        if (props.deliveryStatus === 'delivered') return 'Delivered'
-        if (props.deliveryStatus === 'failed' || props.deliveryStatus === 'bounced') return 'Delivery Failed'
-        return 'Completed'
+        if (props.deliveryStatus === 'delivered') return trans('Delivered')
+        if (props.deliveryStatus === 'failed' || props.deliveryStatus === 'bounced') return trans('Delivery Failed')
+        return trans('Completed')
     }
 
-    if (props.status === 'pending') return 'Pending Delivery'
-    if (props.status === 'draft') return 'Draft'
-    if (props.status === 'active') return 'Active'
+    if (props.status === 'pending') return trans('Pending Delivery')
+    if (props.status === 'draft') return trans('Draft')
+    if (props.status === 'active') return trans('Active')
 
     const status = String(props.status)
     return status.charAt(0).toUpperCase() + status.slice(1)

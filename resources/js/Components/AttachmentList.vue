@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AttachmentItem from './AttachmentItem.vue'
+import { useTrans } from '@/composables/useTrans'
 import type { AttachmentViewModel } from '@/types/models'
 
 interface AttachmentListProps {
@@ -8,6 +9,7 @@ interface AttachmentListProps {
 }
 
 const props = defineProps<AttachmentListProps>()
+const trans = useTrans()
 </script>
 
 <template>
@@ -20,6 +22,6 @@ const props = defineProps<AttachmentListProps>()
         />
     </div>
     <div v-else class="text-center py-8 text-gray-400 italic">
-        (No attachments)
+        {{ trans('(No attachments)') }}
     </div>
 </template>

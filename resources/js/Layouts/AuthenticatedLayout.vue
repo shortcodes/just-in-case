@@ -4,8 +4,10 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import { useTrans } from '@/composables/useTrans'
 
 const page = usePage()
+const trans = useTrans()
 
 const user = computed(() => page.props.auth?.user || {
     name: 'Guest',
@@ -13,11 +15,11 @@ const user = computed(() => page.props.auth?.user || {
 })
 
 const navigation = computed(() => [
-    { name: 'Custodianships', href: route('custodianships.index'), current: route().current('custodianships.*') },
+    { name: trans('Custodianships'), href: route('custodianships.index'), current: route().current('custodianships.*') },
 ])
 
 const userNavigation = computed(() => [
-    { name: 'Profile', href: route('profile.edit') },
+    { name: trans('Profile'), href: route('profile.edit') },
 ])
 
 const logout = () => {
@@ -107,7 +109,7 @@ const logout = () => {
                                                 'block w-full text-left px-4 py-2 text-sm text-gray-700'
                                             ]"
                                         >
-                                            Log Out
+                                            {{ trans('Log Out') }}
                                         </button>
                                     </MenuItem>
                                 </MenuItems>
@@ -184,7 +186,7 @@ const logout = () => {
                             @click="logout"
                             class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                         >
-                            Log Out
+                            {{ trans('Log Out') }}
                         </DisclosureButton>
                     </div>
                 </div>

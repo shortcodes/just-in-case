@@ -10,11 +10,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import StorageIndicator from '@/Components/StorageIndicator.vue'
+import { useTrans } from '@/composables/useTrans'
 import type { CreateCustodianshipPageProps, EditCustodianshipPageProps, TempAttachment, CreateCustodianshipFormData } from '@/types/models'
 
 type CustodianshipFormProps = CreateCustodianshipPageProps | EditCustodianshipPageProps
 
 const props = defineProps<CustodianshipFormProps>()
+const trans = useTrans()
 
 const existingCustodianship = computed(() => (props as Partial<EditCustodianshipPageProps>).custodianship ?? null)
 const isEditMode = computed(() => existingCustodianship.value !== null)
@@ -66,13 +68,13 @@ const getInitialFormData = (): CreateCustodianshipFormData => {
 }
 
 const breadcrumbs = computed(() => [
-    { label: 'Custodianships', href: route('custodianships.index') },
+    { label: trans('Custodianships'), href: route('custodianships.index') },
     ...(isEditMode.value && existingCustodianship.value
         ? [
             { label: existingCustodianship.value.name, href: route('custodianships.show', existingCustodianship.value.uuid) },
-            { label: 'Edit' }
+            { label: trans('Edit') }
         ]
-        : [{ label: 'Create New' }]
+        : [{ label: trans('Create New') }]
     ),
 ])
 
@@ -81,6 +83,8 @@ const form = useForm<CreateCustodianshipFormData>(getInitialFormData())
 const uploadedAttachments = ref<TempAttachment[]>([])
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const isAwaitingResetDecision = ref(false)
+const shouldResetTimer = ref(false)
 
 const totalAttachmentSize = computed(() => {
     return uploadedAttachments.value.reduce((sum, file) => sum + file.size, 0)
@@ -89,14 +93,31 @@ const totalAttachmentSize = computed(() => {
 const canAddRecipient = computed(() => form.recipients.length < 2)
 const canAddFiles = computed(() => totalAttachmentSize.value < 10485760)
 
-const pageTitle = computed(() => isEditMode.value ? 'Edit Custodianship' : 'Create New Custodianship')
+const isActiveStatus = computed(() => existingCustodianship.value?.status === 'active')
+const canResetOnSave = computed(() => isEditMode.value && isActiveStatus.value)
+
+const pageTitle = computed(() => isEditMode.value ? trans('Edit Custodianship') : trans('Create New Custodianship'))
 const pageDescription = computed(() =>
     isEditMode.value
-        ? 'Update your custodianship message and settings.'
-        : 'Set up a new message that will be sent to your recipients if you don\'t check in regularly.'
+        ? trans('Update your custodianship message and settings.')
+        : trans('Set up a new message that will be sent to your recipients if you don\'t check in regularly.')
 )
 
-function handleSubmit() {
+function handleSaveClick() {
+    if (canResetOnSave.value) {
+        isAwaitingResetDecision.value = true
+    } else {
+        performSave(false)
+    }
+}
+
+function handleResetDecision(reset: boolean) {
+    shouldResetTimer.value = reset
+    isAwaitingResetDecision.value = false
+    performSave(reset)
+}
+
+function performSave(resetTimer: boolean) {
     const custodianshipId = existingCustodianship.value?.uuid ?? null
 
     form.transform((data) => ({
@@ -104,9 +125,22 @@ function handleSubmit() {
         attachments: uploadedAttachments.value.map(a => a.id),
     }))
 
+    const onSuccess = () => {
+        if (resetTimer && custodianshipId) {
+            router.post(
+                route('custodianships.reset', custodianshipId),
+                {},
+                {
+                    preserveState: false,
+                }
+            )
+        }
+    }
+
     if (isEditMode.value && custodianshipId) {
         form.patch(route('custodianships.update', custodianshipId), {
             preserveScroll: true,
+            onSuccess,
         })
     } else {
         form.post(route('custodianships.store'), {
@@ -121,7 +155,7 @@ function handleCancel() {
         : route('custodianships.index')
 
     if (form.isDirty) {
-        if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+        if (confirm(trans('You have unsaved changes. Are you sure you want to leave?'))) {
             router.visit(returnRoute)
         }
     } else {
@@ -172,7 +206,7 @@ function handleFiles(files: File[]) {
     for (const file of files) {
         const potentialTotalSize = totalAttachmentSize.value + file.size + newAttachments.reduce((sum, a) => sum + a.size, 0)
         if (potentialTotalSize > 10485760) {
-            alert(`Adding ${file.name} would exceed the 10MB limit.`)
+            alert(trans('Adding :filename would exceed the 10MB limit.').replace(':filename', file.name))
             break
         }
         newAttachments.push({
@@ -220,35 +254,35 @@ function openFileDialog() {
                 </p>
             </div>
 
-            <form @submit.prevent="handleSubmit">
+            <form @submit.prevent="handleSaveClick">
                 <div>
                     <!-- Custodianship Details -->
                     <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-t border-b border-gray-900/10 pt-10 pb-12 md:grid-cols-3">
                         <div>
-                            <h2 class="text-base/7 font-semibold text-gray-900">Custodianship Details</h2>
-                            <p class="mt-1 text-sm/6 text-gray-600">Basic information about your custodianship message.</p>
+                            <h2 class="text-base/7 font-semibold text-gray-900">{{ trans('Custodianship Details') }}</h2>
+                            <p class="mt-1 text-sm/6 text-gray-600">{{ trans('Basic information about your custodianship message.') }}</p>
                         </div>
 
                         <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
                             <div class="sm:col-span-4">
-                                <Label for="name">Name</Label>
+                                <Label for="name">{{ trans('Name') }}</Label>
                                 <div class="mt-2">
                                     <Input
                                         id="name"
                                         v-model="form.name"
                                         type="text"
-                                        placeholder="Enter a name for this custodianship"
+                                        :placeholder="trans('Enter a name for this custodianship')"
                                         :disabled="form.processing"
                                     />
                                 </div>
                                 <p v-if="form.errors.name" class="mt-3 text-sm/6 text-destructive">{{ form.errors.name }}</p>
                                 <p v-else class="mt-3 text-sm/6 text-muted-foreground">
-                                    A descriptive name for this custodianship (e.g., 'Family Emergency Info')
+                                    {{ trans('A descriptive name for this custodianship (e.g., \'Family Emergency Info\')') }}
                                 </p>
                             </div>
 
                             <div class="sm:col-span-3">
-                                <Label for="intervalValue">Check-in Interval</Label>
+                                <Label for="intervalValue">{{ trans('Check-in Interval') }}</Label>
                                 <div class="mt-2 flex gap-2">
                                     <Input
                                         id="intervalValue"
@@ -259,9 +293,13 @@ function openFileDialog() {
                                         :disabled="form.processing"
                                         class="flex-1"
                                     />
-                                    <Select v-model="form.intervalUnit" :disabled="form.processing">
+                                    <Select
+                                        :model-value="form.intervalUnit"
+                                        @update:model-value="form.intervalUnit = String($event)"
+                                        :disabled="form.processing"
+                                    >
                                         <SelectTrigger class="w-32">
-                                            <SelectValue placeholder="Unit" />
+                                            <SelectValue :placeholder="trans('Unit')" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem
@@ -278,7 +316,7 @@ function openFileDialog() {
                                     {{ form.errors.intervalValue || form.errors.intervalUnit }}
                                 </p>
                                 <p v-else class="mt-3 text-sm/6 text-muted-foreground">
-                                    How often you need to check in to prevent the message from being sent
+                                    {{ trans('How often you need to check in to prevent the message from being sent') }}
                                 </p>
                             </div>
                         </div>
@@ -287,31 +325,31 @@ function openFileDialog() {
                     <!-- Message Content -->
                     <div class="grid grid-cols-1 gap-x-8 gap-y-10 mt-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
                         <div>
-                            <h2 class="text-base/7 font-semibold text-gray-900">Message Content</h2>
-                            <p class="mt-1 text-sm/6 text-gray-600">The message and files that will be sent to your recipients.</p>
+                            <h2 class="text-base/7 font-semibold text-gray-900">{{ trans('Message Content') }}</h2>
+                            <p class="mt-1 text-sm/6 text-gray-600">{{ trans('The message and files that will be sent to your recipients.') }}</p>
                         </div>
 
                         <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
                             <div class="col-span-full">
-                                <Label for="messageContent">Message</Label>
+                                <Label for="messageContent">{{ trans('Message') }}</Label>
                                 <div class="mt-2">
                                     <Textarea
                                         id="messageContent"
                                         :model-value="form.messageContent || ''"
                                         @update:model-value="form.messageContent = (typeof $event === 'string' ? $event : String($event)) || null"
-                                        placeholder="Enter your message here..."
+                                        :placeholder="trans('Enter your message here...')"
                                         rows="6"
                                         :disabled="form.processing"
                                     />
                                 </div>
                                 <p v-if="form.errors.messageContent" class="mt-3 text-sm/6 text-destructive">{{ form.errors.messageContent }}</p>
                                 <p v-else class="mt-3 text-sm/6 text-muted-foreground">
-                                    This content will be sent to recipients when the custodianship is triggered.
+                                    {{ trans('This content will be sent to recipients when the custodianship is triggered.') }}
                                 </p>
                             </div>
 
                             <div class="col-span-full">
-                                <Label>Attachments</Label>
+                                <Label>{{ trans('Attachments') }}</Label>
                                 <div class="mt-2">
                                     <div
                                         @dragover="handleDragOver"
@@ -328,7 +366,7 @@ function openFileDialog() {
                                             <PhotoIcon class="mx-auto size-12 text-gray-300" aria-hidden="true" />
                                             <div class="mt-4 flex text-sm/6 text-gray-600">
                                                 <label class="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-600 hover:text-indigo-500">
-                                                    <span>Upload files</span>
+                                                    <span>{{ trans('Upload files') }}</span>
                                                     <input
                                                         ref="fileInput"
                                                         type="file"
@@ -338,9 +376,9 @@ function openFileDialog() {
                                                         :disabled="!canAddFiles"
                                                     />
                                                 </label>
-                                                <p class="pl-1">or drag and drop</p>
+                                                <p class="pl-1">{{ trans('or drag and drop') }}</p>
                                             </div>
-                                            <p class="text-xs/5 text-gray-600">Files up to 10MB total</p>
+                                            <p class="text-xs/5 text-gray-600">{{ trans('Files up to 10MB total') }}</p>
                                         </div>
                                     </div>
 
@@ -380,13 +418,13 @@ function openFileDialog() {
                     <!-- Recipients -->
                     <div class="grid grid-cols-1 gap-x-8 gap-y-10 mt-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
                         <div>
-                            <h2 class="text-base/7 font-semibold text-gray-900">Recipients</h2>
-                            <p class="mt-1 text-sm/6 text-gray-600">Who should receive your message (max 2 recipients in free plan).</p>
+                            <h2 class="text-base/7 font-semibold text-gray-900">{{ trans('Recipients') }}</h2>
+                            <p class="mt-1 text-sm/6 text-gray-600">{{ trans('Who should receive your message (max 2 recipients in free plan).') }}</p>
                         </div>
 
                         <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
                             <div class="col-span-full">
-                                <Label>Email Addresses</Label>
+                                <Label>{{ trans('Email Addresses') }}</Label>
                                 <div class="mt-2 space-y-3">
                                     <div
                                         v-for="(email, index) in form.recipients"
@@ -397,7 +435,7 @@ function openFileDialog() {
                                             :model-value="email"
                                             @update:model-value="updateRecipient(index, String($event))"
                                             type="email"
-                                            placeholder="recipient@example.com"
+                                            :placeholder="trans('recipient@example.com')"
                                             :disabled="form.processing"
                                             class="flex-1"
                                         />
@@ -419,7 +457,7 @@ function openFileDialog() {
                                         class="w-full"
                                     >
                                         <PlusIcon class="h-4 w-4 mr-2" />
-                                        Add recipient
+                                        {{ trans('Add recipient') }}
                                         <span v-if="!canAddRecipient" class="ml-2 text-xs text-muted-foreground">
                                             ({{ form.recipients.length }}/2)
                                         </span>
@@ -427,7 +465,7 @@ function openFileDialog() {
                                 </div>
                                 <p v-if="form.errors.recipients" class="mt-3 text-sm/6 text-destructive">{{ form.errors.recipients }}</p>
                                 <p v-else class="mt-3 text-sm/6 text-muted-foreground">
-                                    Enter the email addresses of people who should receive your message
+                                    {{ trans('Enter the email addresses of people who should receive your message') }}
                                 </p>
                             </div>
                         </div>
@@ -441,13 +479,35 @@ function openFileDialog() {
                         @click="handleCancel"
                         :disabled="form.processing"
                     >
-                        Cancel
+                        {{ trans('Cancel') }}
                     </Button>
+
+                    <template v-if="isAwaitingResetDecision">
+                        <Button
+                            type="button"
+                            variant="default"
+                            class="bg-green-600 hover:bg-green-700 text-white"
+                            :disabled="form.processing"
+                            @click="handleResetDecision(true)"
+                        >
+                            {{ trans('Save & Reset Timer') }}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            :disabled="form.processing"
+                            @click="handleResetDecision(false)"
+                        >
+                            {{ trans('Save Only') }}
+                        </Button>
+                    </template>
+
                     <Button
+                        v-else
                         type="submit"
                         :disabled="form.processing"
                     >
-                        {{ form.processing ? 'Saving...' : 'Save' }}
+                        {{ form.processing ? trans('Saving...') : trans('Save') }}
                     </Button>
                 </div>
             </form>

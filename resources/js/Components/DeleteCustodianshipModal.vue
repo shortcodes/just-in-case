@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
+import { useTrans } from '@/composables/useTrans'
 
 interface DeleteCustodianshipModalProps {
     open: boolean
@@ -26,6 +27,7 @@ const emit = defineEmits<{
     'confirm': []
 }>()
 
+const trans = useTrans()
 const isChecked = ref(false)
 const confirmationName = ref('')
 
@@ -57,10 +59,10 @@ const handleOpenChange = (value: boolean) => {
             <DialogHeader>
                 <div class="flex items-center space-x-2 text-red-600 mb-2">
                     <ExclamationTriangleIcon class="h-6 w-6" />
-                    <DialogTitle class="text-red-600">Delete Custodianship</DialogTitle>
+                    <DialogTitle class="text-red-600">{{ trans('Delete Custodianship') }}</DialogTitle>
                 </div>
                 <DialogDescription class="text-gray-600">
-                    This action is permanent and cannot be undone. All data, attachments, and history will be permanently deleted.
+                    {{ trans('This action is permanent and cannot be undone. All data, attachments, and history will be permanently deleted.') }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -74,19 +76,19 @@ const handleOpenChange = (value: boolean) => {
                         for="confirm-checkbox"
                         class="text-sm font-normal cursor-pointer leading-tight"
                     >
-                        I understand this action is permanent
+                        {{ trans('I understand this action is permanent') }}
                     </Label>
                 </div>
 
                 <div class="space-y-2">
                     <Label for="confirmation-name" class="text-sm">
-                        Type <span class="font-semibold">{{ custodianshipName }}</span> to confirm:
+                        {{ trans('Type :name to confirm:').replace(':name', custodianshipName) }}
                     </Label>
                     <Input
                         id="confirmation-name"
                         v-model="confirmationName"
                         type="text"
-                        placeholder="Enter custodianship name"
+                        :placeholder="trans('Enter custodianship name')"
                         :class="[
                             'transition-colors',
                             confirmationName && isDeleteEnabled ? 'border-green-500 focus:border-green-500' : ''
@@ -101,7 +103,7 @@ const handleOpenChange = (value: boolean) => {
                     variant="outline"
                     @click="handleOpenChange(false)"
                 >
-                    Cancel
+                    {{ trans('Cancel') }}
                 </Button>
                 <Button
                     variant="destructive"
@@ -109,7 +111,7 @@ const handleOpenChange = (value: boolean) => {
                     @click="handleConfirm"
                     class="bg-red-600 hover:bg-red-700"
                 >
-                    Delete Permanently
+                    {{ trans('Delete Permanently') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

@@ -8,3 +8,8 @@ export function useTrans() {
         return translations[key] || key;
     };
 }
+
+export function useLocale() {
+    const page = usePage();
+    return page.props.locale || 'en';
+}

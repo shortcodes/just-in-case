@@ -46,6 +46,7 @@ export interface CustodianshipViewModel {
     name: string
     status: CustodianshipStatus
     interval: string
+    intervalDays?: number
     lastResetAt: string | null
     nextTriggerAt: string | null
     activatedAt: string | null

@@ -49,6 +49,5 @@ export interface ExpiringCustodianshipsBannerProps {
 
 export interface CustodianshipCardProps {
     custodianship: CustodianshipViewModel
-    isResetting?: boolean
     emailVerified?: boolean
 }

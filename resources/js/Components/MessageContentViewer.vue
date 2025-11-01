@@ -11,8 +11,8 @@ const hasContent = computed(() => props.content && props.content.trim().length >
 </script>
 
 <template>
-    <div class="prose prose-sm max-w-none">
-        <div v-if="hasContent" class="text-gray-700 whitespace-pre-wrap break-words">
+    <div class="prose max-w-none">
+        <div v-if="hasContent" class="bg-gray-50 rounded-lg p-6 text-gray-800 whitespace-pre-wrap break-words leading-relaxed text-base">
             {{ content }}
         </div>
         <div v-else class="text-gray-400 italic">

@@ -18,8 +18,8 @@ const user = computed(() => page.props.auth?.user);
 const isAuthenticated = computed(() => !!user.value);
 
 const userNavigation = computed(() => [
-    { name: 'Custodianships', href: route('custodianships.index') },
-    { name: 'Profile', href: route('profile.edit') },
+    { name: trans('Custodianships'), href: route('custodianships.index') },
+    { name: trans('Profile'), href: route('profile.edit') },
 ]);
 
 const logout = () => {
@@ -98,7 +98,7 @@ const logout = () => {
                                                 'block w-full text-left px-4 py-2 text-sm text-gray-700'
                                             ]"
                                         >
-                                            Log Out
+                                            {{ trans('Log Out') }}
                                         </button>
                                     </MenuItem>
                                 </MenuItems>
@@ -158,7 +158,7 @@ const logout = () => {
                             @click="logout"
                             class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                         >
-                            Log Out
+                            {{ trans('Log Out') }}
                         </DisclosureButton>
                     </div>
                 </div>
@@ -466,7 +466,7 @@ const logout = () => {
                         <!-- Price -->
                         <div class="mb-8">
                             <div class="flex items-baseline">
-                                <span class="text-5xl font-bold tracking-tight text-slate-900">0</span>
+                                <span class="text-5xl font-bold tracking-tight text-slate-900">{{ trans('$0') }}</span>
                             </div>
                             <p class="mt-2 text-sm text-slate-600">{{ trans('Forever free') }}</p>
                         </div>

@@ -1,9 +1,12 @@
-<script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import DeleteUserForm from './Partials/DeleteUserForm.vue';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
-import { Head } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { computed } from 'vue'
+import { Head } from '@inertiajs/vue3'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import Breadcrumbs from '@/Components/Breadcrumbs.vue'
+import DeleteUserForm from './Partials/DeleteUserForm.vue'
+import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue'
+import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue'
+import { useTrans } from '@/composables/useTrans'
 
 defineProps({
     mustVerifyEmail: {
@@ -12,44 +15,38 @@ defineProps({
     status: {
         type: String,
     },
-});
+})
+
+const trans = useTrans()
+
+const breadcrumbs = computed(() => [
+    { label: trans('Profile') }
+])
 </script>
 
 <template>
-    <Head title="Profile" />
+    <Head :title="trans('Profile')" />
 
     <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Profile
-            </h2>
-        </template>
+        <div class="space-y-6">
+            <Breadcrumbs :items="breadcrumbs" />
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
-                    <UpdateProfileInformationForm
-                        :must-verify-email="mustVerifyEmail"
-                        :status="status"
-                        class="max-w-xl"
-                    />
-                </div>
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">{{ trans('Profile') }}</h1>
+                <p class="mt-1 text-sm text-gray-600">
+                    {{ trans('Manage your account settings and preferences.') }}
+                </p>
+            </div>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
-                    <UpdatePasswordForm class="max-w-xl" />
-                </div>
+            <div>
+                <UpdateProfileInformationForm
+                    :must-verify-email="mustVerifyEmail"
+                    :status="status"
+                />
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
-                    <DeleteUserForm class="max-w-xl" />
-                </div>
+                <UpdatePasswordForm />
+
+                <DeleteUserForm />
             </div>
         </div>
     </AuthenticatedLayout>

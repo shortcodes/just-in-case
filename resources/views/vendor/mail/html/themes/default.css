@@ -137,7 +137,7 @@ img {
     -premailer-width: 570px;
     background-color: #ffffff;
     border-color: #e8e5ef;
-    border-radius: 2px;
+    border-radius: 12px;
     border-width: 1px;
     box-shadow: 0 2px 0 rgba(0, 0, 150, 0.025), 2px 4px 0 rgba(0, 0, 150, 0.015);
     margin: 0 auto;
@@ -286,6 +286,59 @@ img {
 .panel-item p:last-of-type {
     margin-bottom: 0;
     padding-bottom: 0;
+}
+
+/* Disclaimer Footer */
+
+.disclaimer-footer {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    background-color: #2d3748;
+    margin-top: 32px;
+    padding: 0;
+    width: 100%;
+}
+
+.disclaimer-content {
+    padding: 32px 24px;
+}
+
+.disclaimer-column {
+    vertical-align: top;
+}
+
+.disclaimer-heading {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    text-align: left;
+    letter-spacing: 0.5px;
+}
+
+.disclaimer-text {
+    color: #cbd5e0;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 8px 0;
+    text-align: left;
+}
+
+.disclaimer-warning {
+    color: #e2e8f0;
+    margin-top: 16px;
+}
+
+.disclaimer-link {
+    color: #90cdf4;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.disclaimer-link:hover {
+    color: #63b3ed;
+    text-decoration: underline;
 }
 
 /* Utilities */

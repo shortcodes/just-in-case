@@ -164,5 +164,17 @@
     "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.",
     "Enter your password to confirm:": "Enter your password to confirm:",
     "Password": "Password",
-    "Manage your account settings and preferences.": "Manage your account settings and preferences."
+    "Manage your account settings and preferences.": "Manage your account settings and preferences.",
+    "Profile Information": "Profile Information",
+    "Update your account's profile information and email address.": "Update your account's profile information and email address.",
+    "Email": "Email",
+    "Your email address is unverified.": "Your email address is unverified.",
+    "Click here to re-send the verification email.": "Click here to re-send the verification email.",
+    "A new verification link has been sent to your email address.": "A new verification link has been sent to your email address.",
+    "Saved.": "Saved.",
+    "Update Password": "Update Password",
+    "Ensure your account is using a long, random password to stay secure.": "Ensure your account is using a long, random password to stay secure.",
+    "Current Password": "Current Password",
+    "New Password": "New Password",
+    "Confirm Password": "Confirm Password"
 }

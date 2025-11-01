@@ -169,5 +169,17 @@
     "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "Po usunięciu konta wszystkie Twoje zasoby i dane zostaną trwale usunięte. Przed usunięciem konta, pobierz wszystkie dane lub informacje, które chcesz zachować.",
     "Enter your password to confirm:": "Wprowadź swoje hasło aby potwierdzić:",
     "Password": "Hasło",
-    "Manage your account settings and preferences.": "Zarządzaj ustawieniami i preferencjami konta."
+    "Manage your account settings and preferences.": "Zarządzaj ustawieniami i preferencjami konta.",
+    "Profile Information": "Informacje profilowe",
+    "Update your account's profile information and email address.": "Zaktualizuj informacje profilowe i adres email swojego konta.",
+    "Email": "Email",
+    "Your email address is unverified.": "Twój adres email nie został zweryfikowany.",
+    "Click here to re-send the verification email.": "Kliknij tutaj, aby ponownie wysłać email weryfikacyjny.",
+    "A new verification link has been sent to your email address.": "Nowy link weryfikacyjny został wysłany na Twój adres email.",
+    "Saved.": "Zapisano.",
+    "Update Password": "Zmiana hasła",
+    "Ensure your account is using a long, random password to stay secure.": "Upewnij się, że Twoje konto używa długiego, losowego hasła, aby zachować bezpieczeństwo.",
+    "Current Password": "Obecne hasło",
+    "New Password": "Nowe hasło",
+    "Confirm Password": "Potwierdź hasło"
 }

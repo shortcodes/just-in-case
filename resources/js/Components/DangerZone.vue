@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useTrans } from '@/composables/useTrans'
 
 const props = defineProps<{
     disabled?: boolean
@@ -11,6 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     'delete': []
 }>()
+
+const trans = useTrans()
 </script>
 
 <template>
@@ -18,15 +21,19 @@ const emit = defineEmits<{
         <CardHeader>
             <div class="flex items-center space-x-2">
                 <ExclamationTriangleIcon class="h-5 w-5 text-red-600" />
-                <CardTitle class="text-red-900">Danger Zone</CardTitle>
+                <CardTitle class="text-red-900">
+                    <slot name="title">{{ trans('Danger Zone') }}</slot>
+                </CardTitle>
             </div>
             <CardDescription class="text-red-700">
-                <template v-if="props.disabled">
-                    Deletion is temporarily locked while deliveries are pending.
-                </template>
-                <template v-else>
-                    Deleting this custodianship is permanent and cannot be undone.
-                </template>
+                <slot name="description">
+                    <template v-if="props.disabled">
+                        {{ trans('Deletion is temporarily locked while deliveries are pending.') }}
+                    </template>
+                    <template v-else>
+                        {{ trans('Deleting this custodianship is permanent and cannot be undone.') }}
+                    </template>
+                </slot>
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -42,12 +49,12 @@ const emit = defineEmits<{
                                 @click="emit('delete')"
                             >
                                 <ExclamationTriangleIcon class="h-4 w-4 mr-2" />
-                                Delete Custodianship
+                                <slot name="button">{{ trans('Delete Custodianship') }}</slot>
                             </Button>
                         </span>
                     </TooltipTrigger>
                     <TooltipContent v-if="props.disabled">
-                        <p>Deliveries are still pending. Delete becomes available after completion.</p>
+                        <p>{{ trans('Deliveries are still pending. Delete becomes available after completion.') }}</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>

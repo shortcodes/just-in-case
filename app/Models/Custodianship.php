@@ -10,21 +10,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Custodianship extends Model
+class Custodianship extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\CustodianshipFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'user_id',
         'name',
         'status',
-        'delivery_status',
         'interval',
         'last_reset_at',
         'next_trigger_at',
         'activated_at',
+    ];
+
+    protected $appends = [
+        'delivery_status',
+        'delivery_stats',
     ];
 
     protected function casts(): array
@@ -81,6 +87,11 @@ class Custodianship extends Model
         return $this->hasMany(Reset::class);
     }
 
+    public function downloads(): HasMany
+    {
+        return $this->hasMany(Download::class);
+    }
+
     public function scopeOrderByDefault(Builder $query): Builder
     {
         $now = Carbon::now();
@@ -111,5 +122,68 @@ class Custodianship extends Model
                     ELSE NULL
                 END DESC
             ");
+    }
+
+    public function getDeliveryStatusAttribute(): ?string
+    {
+        if ($this->status !== 'completed') {
+            return null;
+        }
+
+        if ($this->deliveries()->count() === 0) {
+            return null;
+        }
+
+        $stats = $this->getDeliveryStatsAttribute();
+
+        if ($stats['pending'] === $stats['total']) {
+            return 'dispatched';
+        }
+
+        if ($stats['delivered'] === $stats['total']) {
+            return 'delivered';
+        }
+
+        if ($stats['failed'] === $stats['total']) {
+            return 'failed';
+        }
+
+        if ($stats['failed'] > 0 && $stats['delivered'] > 0) {
+            return 'partially_failed';
+        }
+
+        if ($stats['delivered'] > 0 && $stats['pending'] > 0) {
+            return 'partially_delivered';
+        }
+
+        return null;
+    }
+
+    public function getDeliveryStatsAttribute(): array
+    {
+        $deliveries = $this->deliveries;
+        $total = $deliveries->count();
+
+        if ($total === 0) {
+            return [
+                'total' => 0,
+                'delivered' => 0,
+                'failed' => 0,
+                'pending' => 0,
+                'success_percentage' => 0,
+            ];
+        }
+
+        $delivered = $deliveries->where('status', 'delivered')->count();
+        $failed = $deliveries->where('status', 'failed')->count();
+        $pending = $deliveries->where('status', 'pending')->count();
+
+        return [
+            'total' => $total,
+            'delivered' => $delivered,
+            'failed' => $failed,
+            'pending' => $pending,
+            'success_percentage' => $total > 0 ? round(($delivered / $total) * 100, 2) : 0,
+        ];
     }
 }

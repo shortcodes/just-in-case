@@ -21,8 +21,6 @@ class ActivateCustodianshipController extends Controller
             'activated_at' => $now,
         ]);
 
-        return redirect()
-            ->route('custodianships.index')
-            ->with('success', 'Custodianship activated successfully.');
+        return back()->with('success', 'Custodianship activated successfully.');
     }
 }

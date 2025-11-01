@@ -26,6 +26,10 @@ class CustodianshipResource extends JsonResource
             'lastResetAt' => $this->last_reset_at?->toISOString(),
             'nextTriggerAt' => $this->next_trigger_at?->toISOString(),
             'activatedAt' => $this->activated_at?->toISOString(),
+            'recipientsCount' => $this->when(
+                $this->relationLoaded('recipients'),
+                fn () => $this->recipients->count()
+            ),
             'recipients' => $this->when(
                 $this->relationLoaded('recipients'),
                 fn () => $this->recipients->map(fn ($recipient) => [
@@ -57,12 +61,16 @@ class CustodianshipResource extends JsonResource
         ];
     }
 
-    private function parseIntervalToDays(string $interval): int
+    private function parseIntervalToDays(string $interval): float
     {
         try {
             $dateInterval = new \DateInterval($interval);
 
-            return $dateInterval->d + ($dateInterval->m * 30) + ($dateInterval->y * 365);
+            $days = $dateInterval->d + ($dateInterval->m * 30) + ($dateInterval->y * 365);
+            $hours = $dateInterval->h / 24;
+            $minutes = $dateInterval->i / (24 * 60);
+
+            return $days + $hours + $minutes;
         } catch (\Exception $e) {
             return 0;
         }

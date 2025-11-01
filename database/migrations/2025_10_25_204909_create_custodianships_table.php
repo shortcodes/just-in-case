@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->enum('status', ['draft', 'active', 'completed'])->default('draft');
-            $table->enum('delivery_status', ['pending', 'sent', 'delivered', 'failed', 'bounced'])->nullable();
             $table->string('interval', 20);
             $table->timestamp('last_reset_at')->nullable();
             $table->timestamp('next_trigger_at')->nullable();

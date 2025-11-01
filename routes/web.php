@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ActivateCustodianshipController;
 use App\Http\Controllers\CustodianshipController;
+use App\Http\Controllers\DownloadCustodianshipAttachmentsController;
+use App\Http\Controllers\MailgunWebhookController;
+use App\Http\Controllers\PreviewCustodianshipMailController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResetCustodianshipController;
 use Illuminate\Foundation\Application;
@@ -17,6 +20,10 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/custodianships/{custodianship}/download', DownloadCustodianshipAttachmentsController::class)->name('custodianships.download');
+
+Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle'])->name('webhooks.mailgun');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -26,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/custodianships/create', [CustodianshipController::class, 'create'])->name('custodianships.create');
     Route::post('/custodianships', [CustodianshipController::class, 'store'])->name('custodianships.store');
     Route::get('/custodianships/{custodianship}', [CustodianshipController::class, 'show'])->name('custodianships.show');
+    Route::get('/custodianships/{custodianship}/p', PreviewCustodianshipMailController::class)->name('custodianships.preview');
     Route::get('/custodianships/{custodianship}/edit', [CustodianshipController::class, 'edit'])->name('custodianships.edit');
     Route::patch('/custodianships/{custodianship}', [CustodianshipController::class, 'update'])->name('custodianships.update');
     Route::delete('/custodianships/{custodianship}', [CustodianshipController::class, 'destroy'])->name('custodianships.destroy');

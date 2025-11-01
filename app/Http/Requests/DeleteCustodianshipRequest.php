@@ -23,4 +23,3 @@ class DeleteCustodianshipRequest extends FormRequest
         return [];
     }
 }
-

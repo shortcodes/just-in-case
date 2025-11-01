@@ -15,14 +15,11 @@ class ResetCustodianshipController extends Controller
     public function __invoke(ResetCustodianshipRequest $request, Custodianship $custodianship): RedirectResponse
     {
         $now = now();
-
-        // Parse interval string (e.g., "P30D" -> 30 days)
         $interval = new DateInterval($custodianship->interval);
-        $days = $interval->d;
 
         $custodianship->update([
             'last_reset_at' => $now,
-            'next_trigger_at' => $now->copy()->addHours($days * 24),
+            'next_trigger_at' => $now->copy()->add($interval),
         ]);
 
         $custodianship->resets()->create([

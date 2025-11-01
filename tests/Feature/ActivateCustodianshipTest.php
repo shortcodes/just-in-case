@@ -37,6 +37,7 @@ class ActivateCustodianshipTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->from(route('custodianships.index'))
             ->post(route('custodianships.activate', $custodianship));
 
         $response->assertRedirect(route('custodianships.index'));
@@ -242,6 +243,7 @@ class ActivateCustodianshipTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->from(route('custodianships.index'))
             ->post(route('custodianships.activate', $custodianship));
 
         $response->assertRedirect(route('custodianships.index'));

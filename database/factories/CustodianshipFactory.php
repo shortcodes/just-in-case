@@ -20,10 +20,37 @@ class CustodianshipFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => fake()->sentence(3),
-            'status' => 'active',
+            'status' => 'draft',
             'interval' => 'P30D',
+            'last_reset_at' => null,
+            'next_trigger_at' => null,
+        ];
+    }
+
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'active',
             'last_reset_at' => now(),
             'next_trigger_at' => now()->addDays(30),
-        ];
+            'activated_at' => now(),
+        ]);
+    }
+
+    public function expired(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'active',
+            'last_reset_at' => now()->subDays(35),
+            'next_trigger_at' => now()->subDays(5),
+            'activated_at' => now()->subDays(35),
+        ]);
+    }
+
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'completed',
+        ]);
     }
 }

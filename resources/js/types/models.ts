@@ -2,7 +2,7 @@
  * ViewModels for Custodianships Index
  */
 
-export type CustodianshipStatus = 'draft' | 'active' | 'completed'
+export type CustodianshipStatus = 'draft' | 'active' | 'delivering' | 'completed'
 export type DeliveryStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced' | null
 
 export interface UserViewModel {
@@ -20,6 +20,11 @@ export interface DeliveryViewModel {
     mailgunMessageId: string | null
     recipientEmail: string
     deliveredAt: string | null
+    attemptNumber: number
+    maxAttempts: number
+    lastRetryAt: string | null
+    nextRetryAt: string | null
+    errorMessage: string | null
     createdAt: string
     updatedAt: string
 }

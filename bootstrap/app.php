@@ -24,6 +24,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('notifications:expired-custodianships')
             ->everyMinute()
             ->withoutOverlapping();
+
+        $schedule->command('custodianships:check-stale-deliveries')
+            ->cron(config('custodianship.delivery.stale_check_cron'))
+            ->withoutOverlapping();
+
+        $schedule->command('custodianships:process-pending-retries')
+            ->everyMinute()
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -5,7 +5,23 @@ export function useTrans() {
 
     return (key) => {
         const translations = page.props.translations || {};
-        return translations[key] || key;
+
+        if (translations[key]) {
+            return translations[key];
+        }
+
+        const parts = key.split('.');
+        let value = translations;
+
+        for (const part of parts) {
+            if (value && typeof value === 'object' && part in value) {
+                value = value[part];
+            } else {
+                return key;
+            }
+        }
+
+        return typeof value === 'string' ? value : key;
     };
 }
 

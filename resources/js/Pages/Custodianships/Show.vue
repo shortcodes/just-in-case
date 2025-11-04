@@ -14,8 +14,9 @@ import DeleteCustodianshipModal from '@/Components/DeleteCustodianshipModal.vue'
 import DangerZone from '@/Components/DangerZone.vue'
 import CustodianshipActions from '@/Components/CustodianshipActions.vue'
 import CustodianshipTimer from '@/Components/CustodianshipTimer.vue'
+import RecipientListItem from '@/Components/RecipientListItem.vue'
 import { PencilIcon, ChevronDownIcon, ChevronUpIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
-import type { RecipientViewModel, ShowCustodianshipPageProps } from '@/types/models'
+import type { ShowCustodianshipPageProps } from '@/types/models'
 import { parseIntervalToDays } from '@/composables/useInterval'
 import { useTrans } from '@/composables/useTrans'
 import dayjs from '@/plugins/dayjs'
@@ -37,7 +38,7 @@ const isExpired = computed(() => {
 })
 
 const statusDisplay = computed(() => {
-    if (isExpired.value) return 'pending'
+    if (isExpired.value && custodianship.value.status === 'active') return 'pending'
     return custodianship.value.status
 })
 
@@ -92,51 +93,6 @@ const handleDelete = async () => {
 
 const toggleHistory = () => {
     isHistoryExpanded.value = !isHistoryExpanded.value
-}
-
-type RecipientDeliveryStatus = 'pending' | 'delivered' | 'failed'
-
-const getLatestRecipientDeliveryStatus = (recipient: RecipientViewModel): RecipientDeliveryStatus => {
-    return (recipient.latestDelivery?.status ?? 'pending') as RecipientDeliveryStatus
-}
-
-const recipientStatusLabel = (recipient: RecipientViewModel): string => {
-    const status = getLatestRecipientDeliveryStatus(recipient)
-
-    if (status === 'delivered') return trans('Delivered')
-    if (status === 'failed') return trans('Delivery Failed')
-
-    return trans('Pending Delivery')
-}
-
-const recipientStatusClass = (recipient: RecipientViewModel): string => {
-    const status = getLatestRecipientDeliveryStatus(recipient)
-
-    if (status === 'delivered') {
-        return 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-50 font-medium'
-    }
-
-    if (status === 'failed') {
-        return 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-50 font-medium'
-    }
-
-    return 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-50 font-medium'
-}
-
-const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null => {
-    const status = getLatestRecipientDeliveryStatus(recipient)
-
-    if (status === 'pending') {
-        return null
-    }
-
-    const updatedAt = recipient.latestDelivery?.updatedAt
-
-    if (!updatedAt) {
-        return null
-    }
-
-    return dayjs(updatedAt).fromNow()
 }
 </script>
 
@@ -209,16 +165,6 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                 </div>
             </div>
 
-            <!-- Delivery failed banner -->
-            <div
-                v-if="custodianship.deliveryStatus === 'failed' || custodianship.deliveryStatus === 'bounced'"
-                class="bg-red-50 border border-red-200 rounded-lg p-4"
-            >
-                <p class="text-sm text-red-800 font-medium">
-                    {{ trans('Email delivery failed. Please edit the custodianship to fix recipient email addresses.') }}
-                </p>
-            </div>
-
             <div class="space-y-6">
                 <!-- Timer Section (only for active status) -->
                 <TimerSection v-if="custodianship.status === 'active' && !isExpired" :custodianship="custodianship" />
@@ -262,31 +208,12 @@ const recipientStatusUpdatedAt = (recipient: RecipientViewModel): string | null 
                     </CardHeader>
                     <CardContent>
                         <div v-if="custodianship.recipients && custodianship.recipients.length > 0" class="space-y-3">
-                            <div
+                            <RecipientListItem
                                 v-for="recipient in custodianship.recipients"
                                 :key="recipient.id"
-                                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <span class="text-sm font-medium text-gray-900">
-                                        {{ recipient.email }}
-                                    </span>
-                                    <template v-if="isExpired">
-                                        <Badge :class="recipientStatusClass(recipient)">
-                                            {{ recipientStatusLabel(recipient) }}
-                                        </Badge>
-                                        <span
-                                            v-if="recipientStatusUpdatedAt(recipient)"
-                                            class="text-xs text-gray-500"
-                                        >
-                                            {{ trans('Updated :time').replace(':time', recipientStatusUpdatedAt(recipient) || '') }}
-                                        </span>
-                                    </template>
-                                </div>
-                                <span class="text-xs text-gray-500">
-                                    {{ trans('Added :time').replace(':time', dayjs(recipient.createdAt).fromNow()) }}
-                                </span>
-                            </div>
+                                :recipient="recipient"
+                                :show-delivery-status="isExpired || custodianship.status === 'delivering' || custodianship.status === 'completed'"
+                            />
                         </div>
                         <div v-else class="text-center py-8 text-gray-400 italic">
                             {{ trans('(No recipients)') }}

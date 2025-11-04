@@ -60,8 +60,10 @@ const subtextColorClass = computed(() => {
 })
 
 
-// Display status aligns with Show page: once expired, show as pending
 const displayStatus = computed(() => {
+    if (props.custodianship.status === 'completed') {
+        return 'completed'
+    }
     return isExpired.value ? 'pending' : props.custodianship.status
 })
 </script>

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\MailgunWebhookException;
 use App\Models\Delivery;
-use App\Notifications\CustodianshipOwnerAlert;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -103,42 +102,36 @@ class MailgunWebhookController extends Controller
         $delivery->update([
             'status' => 'delivered',
             'delivered_at' => now(),
+            'next_retry_at' => null,
         ]);
+
+        $delivery->custodianship->updateDeliveryStatus();
     }
 
     protected function handleFailed(Delivery $delivery, array $eventData): void
     {
-        $delivery->update([
-            'status' => 'failed',
-        ]);
-
         $errorMessage = $eventData['delivery-status']['message'] ?? 'Unknown error';
+        $errorCode = $eventData['delivery-status']['code'] ?? null;
 
-        $this->sendAlertToOwner($delivery, 'failed', $errorMessage);
+        $isTemporaryFailure = $this->isTemporaryFailure($errorCode);
+        $isPermanent = ! $isTemporaryFailure;
+
+        $delivery->fail($errorMessage, $isPermanent);
+    }
+
+    protected function isTemporaryFailure(?int $errorCode): bool
+    {
+        if ($errorCode === null) {
+            return true;
+        }
+
+        return $errorCode >= 400 && $errorCode < 500 && ! in_array($errorCode, [421, 422, 432]);
     }
 
     protected function handleBounced(Delivery $delivery, array $eventData): void
     {
-        $delivery->update([
-            'status' => 'failed',
-        ]);
-
         $errorMessage = $eventData['delivery-status']['message'] ?? 'Bounced';
 
-        $this->sendAlertToOwner($delivery, 'bounced', $errorMessage);
-    }
-
-    protected function sendAlertToOwner(Delivery $delivery, string $type, string $errorMessage): void
-    {
-        $custodianship = $delivery->custodianship;
-
-        if ($custodianship && $custodianship->user) {
-            $custodianship->user->notify(new CustodianshipOwnerAlert(
-                $custodianship,
-                $delivery,
-                $type,
-                $errorMessage
-            ));
-        }
+        $delivery->fail($errorMessage, true);
     }
 }

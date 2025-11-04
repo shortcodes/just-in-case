@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\SendCustodianshipNotificationJob;
 use App\Models\Custodianship;
-use App\Notifications\ExpiredCustodianshipNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -15,9 +15,11 @@ class NotificationsExpiredCustodianshipsCommand extends Command
 
     public function handle(): int
     {
-        $this->validateConfiguration();
-
-        $expiredCustodianships = $this->getExpiredCustodianships();
+        $expiredCustodianships = Custodianship::query()
+            ->where('status', 'active')
+            ->where('next_trigger_at', '<=', now())
+            ->with(['recipients', 'message', 'media', 'user'])
+            ->get();
 
         if ($expiredCustodianships->isEmpty()) {
             $this->info('No expired custodianships found.');
@@ -25,52 +27,21 @@ class NotificationsExpiredCustodianshipsCommand extends Command
             return self::SUCCESS;
         }
 
-        $totalNotifications = 0;
+        $expiredCustodianships->each(fn ($custodianship) => $this->processCustodianship($custodianship));
 
-        foreach ($expiredCustodianships as $custodianship) {
-            $notificationsQueued = $this->processCustodianship($custodianship);
-            $totalNotifications += $notificationsQueued;
-        }
-
-        $this->info("Processed {$expiredCustodianships->count()} custodianship(s), queued {$totalNotifications} notification(s).");
+        $this->info("Processed {$expiredCustodianships->count()} custodianship(s).");
 
         return self::SUCCESS;
     }
 
-    protected function validateConfiguration(): void
-    {
-        if (config('mail.mailers.mailgun.domain') === null && config('mail.default') === 'mailgun') {
-            $this->error('Mailgun configuration is missing. Please check your environment variables.');
-            exit(1);
-        }
-    }
-
-    protected function getExpiredCustodianships()
-    {
-        return Custodianship::query()
-            ->where('status', 'active')
-            ->where('next_trigger_at', '<=', now())
-            ->with(['recipients', 'message', 'media', 'user'])
-            ->get();
-    }
-
     protected function processCustodianship(Custodianship $custodianship): int
     {
-        $notificationsQueued = 0;
+        return DB::transaction(function () use ($custodianship) {
+            $custodianship->recipients->each(fn ($recipient) => SendCustodianshipNotificationJob::dispatch($custodianship, $recipient));
 
-        DB::transaction(function () use ($custodianship, &$notificationsQueued) {
-            foreach ($custodianship->recipients as $recipient) {
-                $recipient->notify(new ExpiredCustodianshipNotification(
-                    $custodianship,
-                    $recipient
-                ));
+            $custodianship->update(['status' => 'delivering']);
 
-                $notificationsQueued++;
-            }
-
-            $custodianship->update(['status' => 'completed']);
+            return $custodianship;
         });
-
-        return $notificationsQueued;
     }
 }

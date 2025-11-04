@@ -43,6 +43,11 @@ class CustodianshipResource extends JsonResource
                             'mailgunMessageId' => $recipient->latestDelivery->mailgun_message_id,
                             'recipientEmail' => $recipient->latestDelivery->recipient_email,
                             'deliveredAt' => $recipient->latestDelivery->delivered_at?->toISOString(),
+                            'attemptNumber' => $recipient->latestDelivery->attempt_number,
+                            'maxAttempts' => $recipient->latestDelivery->max_attempts,
+                            'lastRetryAt' => $recipient->latestDelivery->last_retry_at?->toISOString(),
+                            'nextRetryAt' => $recipient->latestDelivery->next_retry_at?->toISOString(),
+                            'errorMessage' => $recipient->latestDelivery->error_message,
                             'createdAt' => $recipient->latestDelivery->created_at->toISOString(),
                             'updatedAt' => $recipient->latestDelivery->updated_at->toISOString(),
                         ]

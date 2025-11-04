@@ -126,7 +126,7 @@ class Custodianship extends Model implements HasMedia
 
     public function getDeliveryStatusAttribute(): ?string
     {
-        if ($this->status !== 'completed') {
+        if (! in_array($this->status, ['delivering', 'completed'])) {
             return null;
         }
 
@@ -136,7 +136,7 @@ class Custodianship extends Model implements HasMedia
 
         $stats = $this->getDeliveryStatsAttribute();
 
-        if ($stats['pending'] === $stats['total']) {
+        if ($stats['pending'] > 0) {
             return 'dispatched';
         }
 
@@ -185,5 +185,32 @@ class Custodianship extends Model implements HasMedia
             'pending' => $pending,
             'success_percentage' => $total > 0 ? round(($delivered / $total) * 100, 2) : 0,
         ];
+    }
+
+    public function updateDeliveryStatus(): void
+    {
+        $stats = $this->delivery_stats;
+
+        if ($stats['total'] === 0) {
+            return;
+        }
+
+        if ($stats['delivered'] === $stats['total']) {
+            $this->update(['status' => 'completed']);
+
+            return;
+        }
+
+        if ($stats['pending'] > 0) {
+            $this->update(['status' => 'delivering']);
+
+            return;
+        }
+
+        if ($stats['total'] === $stats['delivered'] + $stats['failed']) {
+            $this->update(['status' => 'completed']);
+
+            return;
+        }
     }
 }

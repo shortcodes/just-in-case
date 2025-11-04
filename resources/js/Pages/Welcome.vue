@@ -98,7 +98,7 @@ const logout = () => {
                                                 'block w-full text-left px-4 py-2 text-sm text-gray-700'
                                             ]"
                                         >
-                                            {{ trans('Log Out') }}
+                                            {{ trans('Log Out') }}and put thos
                                         </button>
                                     </MenuItem>
                                 </MenuItems>

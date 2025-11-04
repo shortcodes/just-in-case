@@ -3,7 +3,7 @@
 return [
     'delivery' => [
         'retry_intervals' => [
-            env('CUSTODIANSHIP_RETRY_INTERVAL_1', 60),
+            env('CUSTODIANSHIP_RETRY_INTERVAL_1', 3600),
             env('CUSTODIANSHIP_RETRY_INTERVAL_2', 86400),
             env('CUSTODIANSHIP_RETRY_INTERVAL_3', 604800),
         ],
@@ -11,8 +11,6 @@ return [
         'max_attempts' => env('CUSTODIANSHIP_MAX_ATTEMPTS', 3),
 
         'pending_timeout' => env('CUSTODIANSHIP_PENDING_TIMEOUT', 7200),
-
-        'stale_check_cron' => env('CUSTODIANSHIP_STALE_CHECK_CRON', '*/15 * * * *'),
     ],
 
     'thresholds' => [

@@ -30,7 +30,7 @@ class UpdateCustodianshipRequest extends FormRequest
             'recipients' => ['nullable', 'array', 'max:2'],
             'recipients.*' => ['nullable', 'email', 'max:255'],
             'attachments' => ['nullable', 'array', 'max:10'],
-            'attachments.*' => ['string', 'uuid'],
+            'attachments.*' => ['integer', 'exists:media,id'],
         ];
     }
 

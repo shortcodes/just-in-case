@@ -6,8 +6,7 @@ import {
     CheckCircleIcon,
     XCircleIcon,
     ClockIcon,
-    ExclamationTriangleIcon,
-    ArrowPathIcon
+    ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline'
 import { useTrans } from '@/composables/useTrans'
 import dayjs from '@/plugins/dayjs'
@@ -60,18 +59,6 @@ const hasDeliveryInfo = computed(() => {
     return props.recipient.latestDelivery && props.showDeliveryStatus
 })
 
-const statusUpdatedAt = computed(() => {
-    if (deliveryStatus.value === 'pending') return null
-    const updatedAt = props.recipient.latestDelivery?.updatedAt
-    if (!updatedAt) return null
-    return dayjs(updatedAt).fromNow()
-})
-
-const isRetrying = computed(() => {
-    return props.recipient.latestDelivery?.status === 'pending' &&
-           (props.recipient.latestDelivery?.attemptNumber || 0) > 1
-})
-
 const isFinalAttempt = computed(() => {
     const attemptNumber = props.recipient.latestDelivery?.attemptNumber || 1
     const maxAttempts = props.recipient.latestDelivery?.maxAttempts || 3
@@ -101,7 +88,7 @@ const nextRetryTime = computed(() => {
         ]"
     >
             <!-- Header: Email and Status -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ">
                 <!-- Email -->
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-gray-900 truncate">
@@ -129,30 +116,13 @@ const nextRetryTime = computed(() => {
                 </div>
             </div>
 
-            <!-- Updated Time (for delivered/failed) -->
-            <div v-if="statusUpdatedAt && showDeliveryStatus" class="mb-3">
-                <p class="text-xs text-gray-500 flex items-center gap-1.5">
-                    <ClockIcon class="h-3.5 w-3.5" />
-                    {{ trans('Updated :time').replace(':time', statusUpdatedAt) }}
-                </p>
-            </div>
-
             <!-- Delivery Details (for pending status) -->
-            <template v-if="hasDeliveryInfo && recipient.latestDelivery!.status === 'pending'">
+            <template v-if="hasDeliveryInfo && recipient.latestDelivery!.status === 'pending' && (recipient.latestDelivery!.errorMessage || (recipient.latestDelivery!.attemptNumber || 1) > 1)">
                 <Separator class="my-3" />
 
                 <div class="space-y-3">
                     <!-- Attempt Information -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- Retry Indicator -->
-                        <div
-                            v-if="isRetrying"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-blue-100 text-blue-900"
-                        >
-                            <ArrowPathIcon class="h-3.5 w-3.5" />
-                            <span>{{ trans('Retrying') }}</span>
-                        </div>
-
                         <!-- Attempt Number -->
                         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-900">
                             <span>{{ attemptText }}</span>

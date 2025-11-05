@@ -2,7 +2,7 @@
  * ViewModels for Custodianships Index
  */
 
-export type CustodianshipStatus = 'draft' | 'active' | 'delivering' | 'completed'
+export type CustodianshipStatus = 'draft' | 'active' | 'completed'
 export type DeliveryStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced' | null
 
 export interface UserViewModel {
@@ -90,12 +90,13 @@ export interface IntervalUnitOption {
 }
 
 export interface TempAttachment {
-    id: string // temporary UUID
+    id: string
+    mediaId: number | null
     name: string
     size: number
     mimeType: string
-    tempPath: string
-    uploadProgress: number // 0-100
+    uploadProgress: number
+    error: string | null
 }
 
 export interface CreateCustodianshipFormData {

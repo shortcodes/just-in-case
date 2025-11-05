@@ -94,21 +94,6 @@ class CustodianshipDeliveryStatusTest extends TestCase
         $this->assertEquals('partially_failed', $custodianship->delivery_status);
     }
 
-    public function test_delivery_status_is_partially_delivered_when_some_delivered_some_pending(): void
-    {
-        $user = User::factory()->create();
-        $custodianship = Custodianship::factory()->for($user)->completed()->create();
-        $recipient1 = Recipient::factory()->for($custodianship)->create();
-        $recipient2 = Recipient::factory()->for($custodianship)->create();
-
-        Delivery::factory()->for($custodianship)->for($recipient1)->delivered()->create();
-        Delivery::factory()->for($custodianship)->for($recipient2)->create(['status' => 'pending']);
-
-        $custodianship->refresh();
-
-        $this->assertEquals('partially_delivered', $custodianship->delivery_status);
-    }
-
     public function test_delivery_stats_returns_correct_counts(): void
     {
         $user = User::factory()->create();

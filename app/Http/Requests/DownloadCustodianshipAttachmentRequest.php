@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Custodianship;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DeleteCustodianshipRequest extends FormRequest
+class DownloadCustodianshipAttachmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,11 +15,7 @@ class DeleteCustodianshipRequest extends FormRequest
             return false;
         }
 
-        if ($custodianship->status === 'completed' && $custodianship->deliveries()->where('status', 'pending')->exists()) {
-            return false;
-        }
-
-        return $this->user()->can('delete', $custodianship);
+        return $this->user()->can('view', $custodianship);
     }
 
     public function rules(): array

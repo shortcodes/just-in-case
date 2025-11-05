@@ -122,10 +122,10 @@ class MailgunWebhookController extends Controller
     protected function isTemporaryFailure(?int $errorCode): bool
     {
         if ($errorCode === null) {
-            return true;
+            return false;
         }
 
-        return $errorCode >= 400 && $errorCode < 500 && ! in_array($errorCode, [421, 422, 432]);
+        return $errorCode >= 500 && $errorCode < 600;
     }
 
     protected function handleBounced(Delivery $delivery, array $eventData): void

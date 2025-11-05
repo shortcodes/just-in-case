@@ -34,14 +34,12 @@ class NotificationsExpiredCustodianshipsCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function processCustodianship(Custodianship $custodianship): int
+    protected function processCustodianship(Custodianship $custodianship): void
     {
-        return DB::transaction(function () use ($custodianship) {
+        DB::transaction(function () use ($custodianship) {
             $custodianship->recipients->each(fn ($recipient) => SendCustodianshipNotificationJob::dispatch($custodianship, $recipient));
 
-            $custodianship->update(['status' => 'delivering']);
-
-            return $custodianship;
+            $custodianship->update(['status' => 'completed']);
         });
     }
 }

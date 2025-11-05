@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\ActivateCustodianshipController;
+use App\Http\Controllers\CustodianshipAttachmentController;
 use App\Http\Controllers\CustodianshipController;
-use App\Http\Controllers\DownloadCustodianshipAttachmentsController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\PreviewCustodianshipMailController;
 use App\Http\Controllers\ProfileController;
@@ -20,7 +20,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/custodianships/{custodianship}/download', DownloadCustodianshipAttachmentsController::class)->name('custodianships.download');
+Route::get('/custodianships/{custodianship}/download', [CustodianshipAttachmentController::class, 'downloadAll'])->name('custodianships.download');
 
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle'])->name('webhooks.mailgun');
 
@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::post('/custodianships/attachments/upload', [CustodianshipAttachmentController::class, 'upload'])->name('custodianships.attachments.upload');
     Route::get('/custodianships', [CustodianshipController::class, 'index'])->name('custodianships.index');
     Route::get('/custodianships/create', [CustodianshipController::class, 'create'])->name('custodianships.create');
     Route::post('/custodianships', [CustodianshipController::class, 'store'])->name('custodianships.store');
@@ -39,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/custodianships/{custodianship}', [CustodianshipController::class, 'destroy'])->name('custodianships.destroy');
     Route::post('/custodianships/{custodianship}/reset', ResetCustodianshipController::class)->name('custodianships.reset');
     Route::post('/custodianships/{custodianship}/activate', ActivateCustodianshipController::class)->name('custodianships.activate');
+    Route::get('/custodianships/{custodianship}/attachments/{attachment}/download', [CustodianshipAttachmentController::class, 'download'])->name('custodianships.attachments.download');
 });
 
 require __DIR__.'/auth.php';

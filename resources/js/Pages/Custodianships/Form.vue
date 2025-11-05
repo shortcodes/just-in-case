@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { Head, useForm, router } from '@inertiajs/vue3'
 import { ChevronDownIcon, PhotoIcon, XMarkIcon, DocumentIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import axios from 'axios'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import StorageIndicator from '@/Components/StorageIndicator.vue'
 import { useTrans } from '@/composables/useTrans'
 import type { CreateCustodianshipPageProps, EditCustodianshipPageProps, TempAttachment, CreateCustodianshipFormData } from '@/types/models'
@@ -48,13 +50,17 @@ const getInitialFormData = (): CreateCustodianshipFormData => {
             ? custodianship.recipients.map(r => r.email)
             : []
 
+        const attachmentIds = Array.isArray(custodianship.attachments)
+            ? custodianship.attachments.map(a => String(a.id))
+            : []
+
         return {
             name: custodianship.name,
             messageContent: custodianship.messageContent || null,
             intervalValue: interval.value,
             intervalUnit: interval.unit,
             recipients,
-            attachments: [],
+            attachments: attachmentIds,
         }
     }
     return {
@@ -65,6 +71,21 @@ const getInitialFormData = (): CreateCustodianshipFormData => {
         recipients: [],
         attachments: [],
     }
+}
+
+const getInitialUploadedAttachments = (): TempAttachment[] => {
+    if (isEditMode.value && existingCustodianship.value && existingCustodianship.value.attachments) {
+        return existingCustodianship.value.attachments.map(a => ({
+            id: crypto.randomUUID(),
+            mediaId: a.id,
+            name: a.fileName,
+            size: a.size,
+            mimeType: a.mimeType,
+            uploadProgress: 100,
+            error: null,
+        }))
+    }
+    return []
 }
 
 const breadcrumbs = computed(() => [
@@ -80,7 +101,7 @@ const breadcrumbs = computed(() => [
 
 const form = useForm<CreateCustodianshipFormData>(getInitialFormData())
 
-const uploadedAttachments = ref<TempAttachment[]>([])
+const uploadedAttachments = ref<TempAttachment[]>(getInitialUploadedAttachments())
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const isAwaitingResetDecision = ref(false)
@@ -122,7 +143,9 @@ function performSave(resetTimer: boolean) {
 
     form.transform((data) => ({
         ...data,
-        attachments: uploadedAttachments.value.map(a => a.id),
+        attachments: uploadedAttachments.value
+            .filter(a => a.mediaId !== null)
+            .map(a => a.mediaId as number),
     }))
 
     const onSuccess = () => {
@@ -201,25 +224,64 @@ function handleFileSelect(e: Event) {
     }
 }
 
-function handleFiles(files: File[]) {
-    const newAttachments: TempAttachment[] = []
+async function handleFiles(files: File[]) {
     for (const file of files) {
-        const potentialTotalSize = totalAttachmentSize.value + file.size + newAttachments.reduce((sum, a) => sum + a.size, 0)
-        if (potentialTotalSize > 10485760) {
-            alert(trans('Adding :filename would exceed the 10MB limit.').replace(':filename', file.name))
-            break
-        }
-        newAttachments.push({
-            id: crypto.randomUUID(),
+        const potentialTotalSize = totalAttachmentSize.value + file.size
+        const tempId = crypto.randomUUID()
+        const tempAttachment: TempAttachment = {
+            id: tempId,
+            mediaId: null,
             name: file.name,
             size: file.size,
             mimeType: file.type || 'application/octet-stream',
-            tempPath: '',
-            uploadProgress: 100
-        })
+            uploadProgress: 1,
+            error: null,
+        }
+
+        if (potentialTotalSize > 10485760) {
+            tempAttachment.error = trans('Adding :filename would exceed the 10MB limit.').replace(':filename', file.name)
+            tempAttachment.uploadProgress = 0
+            uploadedAttachments.value.push(tempAttachment)
+            continue
+        }
+
+        uploadedAttachments.value.push(tempAttachment)
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        try {
+            const response = await axios.post(route('custodianships.attachments.upload'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent.total) {
+                        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                        const attachment = uploadedAttachments.value.find(a => a.id === tempId)
+                        if (attachment) {
+                            attachment.uploadProgress = Math.min(progress, 99)
+                        }
+                    }
+                },
+            })
+
+            const attachment = uploadedAttachments.value.find(a => a.id === tempId)
+            if (attachment) {
+                attachment.mediaId = response.data.id
+                attachment.uploadProgress = 100
+            }
+        } catch (error: any) {
+            const attachment = uploadedAttachments.value.find(a => a.id === tempId)
+            if (attachment) {
+                attachment.error = error.response?.data?.message || 'Upload failed'
+                attachment.uploadProgress = 0
+            }
+        }
     }
-    if (newAttachments.length > 0) {
-        uploadedAttachments.value.push(...newAttachments)
+
+    if (fileInput.value) {
+        fileInput.value.value = ''
     }
 }
 
@@ -386,24 +448,37 @@ function openFileDialog() {
                                         <div
                                             v-for="file in uploadedAttachments"
                                             :key="file.id"
-                                            class="flex items-center justify-between rounded-lg border p-3"
+                                            :class="[
+                                                'rounded-lg border p-3',
+                                                file.error ? 'border-destructive bg-destructive/5' : ''
+                                            ]"
                                         >
-                                            <div class="flex items-center gap-3 min-w-0 flex-1">
-                                                <DocumentIcon class="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                                                <div class="min-w-0 flex-1">
-                                                    <p class="text-sm font-medium truncate">{{ file.name }}</p>
-                                                    <p class="text-xs text-muted-foreground">{{ formatBytes(file.size) }}</p>
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3 min-w-0 flex-1">
+                                                    <DocumentIcon class="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-sm font-medium truncate">{{ file.name }}</p>
+                                                        <p class="text-xs text-muted-foreground">{{ formatBytes(file.size) }}</p>
+                                                    </div>
                                                 </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    @click="removeFile(file.id)"
+                                                    class="flex-shrink-0"
+                                                    :disabled="file.mediaId === null && !file.error"
+                                                >
+                                                    <XMarkIcon class="h-4 w-4" />
+                                                </Button>
                                             </div>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                @click="removeFile(file.id)"
-                                                class="flex-shrink-0"
-                                            >
-                                                <XMarkIcon class="h-4 w-4" />
-                                            </Button>
+                                            <div v-if="file.mediaId === null && !file.error" class="mt-2">
+                                                <Progress :model-value="file.uploadProgress" class="h-1" />
+                                                <p class="text-xs text-muted-foreground mt-1">{{ file.uploadProgress }}%</p>
+                                            </div>
+                                            <div v-if="file.error" class="mt-2">
+                                                <p class="text-xs text-destructive">{{ file.error }}</p>
+                                            </div>
                                         </div>
                                     </div>
 

@@ -22,7 +22,11 @@ class CustodianshipCollectionResource extends JsonResource
             'deliveryStatus' => $this->delivery_status,
             'interval' => $this->interval,
             'recipientsCount' => $this->recipients_count ?? 0,
-            'attachmentsCount' => 0,
+            'attachmentsCount' => $this->whenLoaded(
+                'media',
+                fn () => $this->media->where('collection_name', 'attachments')->count(),
+                fn () => $this->getMedia('attachments')->count()
+            ),
             'messageContent' => $this->whenLoaded('message', fn () => $this->message?->content),
             'lastResetAt' => $this->last_reset_at?->toISOString(),
             'nextTriggerAt' => $this->next_trigger_at?->toISOString(),

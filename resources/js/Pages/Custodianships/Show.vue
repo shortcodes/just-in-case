@@ -42,6 +42,12 @@ const statusDisplay = computed(() => {
     return custodianship.value.status
 })
 
+const hasPendingDeliveries = computed(() => {
+    return custodianship.value.recipients?.some(
+        recipient => recipient.latestDelivery?.status === 'pending'
+    ) || false
+})
+
 const breadcrumbs = computed(() => [
     { name: trans('Custodianships'), href: route('custodianships.index') },
     { name: custodianship.value.name, href: '#', current: true }
@@ -134,7 +140,7 @@ const toggleHistory = () => {
             </nav>
 
             <!-- Page Header -->
-            <div class="flex items-start justify-between">
+            <div class="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
                 <div class="space-y-2">
                     <div class="flex items-center space-x-3">
                         <h1 class="text-3xl font-bold text-gray-900">
@@ -168,6 +174,16 @@ const toggleHistory = () => {
             <div class="space-y-6">
                 <!-- Timer Section (only for active status) -->
                 <TimerSection v-if="custodianship.status === 'active' && !isExpired" :custodianship="custodianship" />
+
+                <!-- Interval Information (for non-active status) -->
+                <Card v-else-if="custodianship.status !== 'active' || isExpired">
+                    <CardContent class="py-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">{{ trans('Check interval') }}:</span>
+                            <span class="text-sm font-medium text-gray-900">{{ formattedInterval }}</span>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <!-- Message Content Section -->
                 <Card>
@@ -212,7 +228,7 @@ const toggleHistory = () => {
                                 v-for="recipient in custodianship.recipients"
                                 :key="recipient.id"
                                 :recipient="recipient"
-                                :show-delivery-status="isExpired || custodianship.status === 'delivering' || custodianship.status === 'completed'"
+                                :show-delivery-status="isExpired || custodianship.status === 'completed'"
                             />
                         </div>
                         <div v-else class="text-center py-8 text-gray-400 italic">
@@ -260,7 +276,7 @@ const toggleHistory = () => {
 
             <!-- Danger Zone -->
             <DangerZone
-                :disabled="statusDisplay === 'pending'"
+                :disabled="statusDisplay === 'pending' || hasPendingDeliveries"
                 @delete="isDeleteModalOpen = true"
             />
         </div>

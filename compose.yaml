@@ -19,6 +19,7 @@ services:
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
         volumes:
             - '.:/var/www/html'
+            - './docker/nginx/default.conf:/etc/nginx/sites-available/default:ro'
         networks:
             - sail
         depends_on:
@@ -143,9 +144,10 @@ services:
         networks:
             - sail
         depends_on:
-            - laravel.test
-            - mysql
-            - redis
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
         restart: unless-stopped
         command: php artisan queue:work --queue=notifications,default --tries=3
     scheduler:
@@ -165,15 +167,12 @@ services:
         networks:
             - sail
         depends_on:
-            - laravel.test
-            - mysql
-            - redis
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
         restart: unless-stopped
-        command: >
-            bash -c "while true; do
-                php artisan schedule:run --verbose --no-interaction &
-                sleep 60
-            done"
+        command: php artisan schedule:work
 networks:
     sail:
         driver: bridge

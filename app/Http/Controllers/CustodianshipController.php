@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CustodianshipController extends Controller
 {
@@ -24,7 +25,7 @@ class CustodianshipController extends Controller
     {
         $custodianships = $request->user()
             ->custodianships()
-            ->with('message')
+            ->with(['message', 'media'])
             ->withCount('recipients')
             ->orderByDefault()
             ->get();
@@ -66,6 +67,13 @@ class CustodianshipController extends Controller
                 ]);
             }
 
+            foreach ($request->validated('attachments', []) as $mediaId) {
+                $media = Media::find($mediaId);
+                if ($media && $media->model_type === 'App\Models\User' && $media->model_id === $request->user()->id) {
+                    $media->move($custodianship, 'attachments');
+                }
+            }
+
             return $custodianship;
         });
 
@@ -81,6 +89,7 @@ class CustodianshipController extends Controller
             'message',
             'resets',
             'user',
+            'media',
         ]);
 
         return Inertia::render('Custodianships/Show', [
@@ -105,6 +114,7 @@ class CustodianshipController extends Controller
         $custodianship->load([
             'recipients',
             'message',
+            'media',
         ]);
 
         return Inertia::render('Custodianships/Form', [
@@ -146,6 +156,25 @@ class CustodianshipController extends Controller
             $emailsToAdd = array_diff($newEmails, $existingEmails);
             foreach ($emailsToAdd as $email) {
                 $custodianship->recipients()->create(['email' => $email]);
+            }
+
+            $existingAttachmentIds = $custodianship->getMedia('attachments')->pluck('id')->toArray();
+            $newAttachmentIds = $request->validated('attachments', []);
+
+            $attachmentsToRemove = array_diff($existingAttachmentIds, $newAttachmentIds);
+            foreach ($attachmentsToRemove as $mediaId) {
+                $media = Media::find($mediaId);
+                if ($media) {
+                    $media->delete();
+                }
+            }
+
+            $attachmentsToAdd = array_diff($newAttachmentIds, $existingAttachmentIds);
+            foreach ($attachmentsToAdd as $mediaId) {
+                $media = Media::find($mediaId);
+                if ($media && $media->model_type === 'App\Models\User' && $media->model_id === $request->user()->id) {
+                    $media->move($custodianship, 'attachments');
+                }
             }
 
             return $custodianship;

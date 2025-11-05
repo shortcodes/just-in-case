@@ -55,7 +55,15 @@ class CustodianshipResource extends JsonResource
                 ])->toArray()
             ),
             'messageContent' => $this->whenLoaded('message', fn () => $this->message?->content),
-            'attachments' => [],
+            'attachments' => $this->getMedia('attachments')->map(fn ($media) => [
+                'id' => $media->id,
+                'name' => $media->name,
+                'fileName' => $media->file_name,
+                'size' => $media->size,
+                'mimeType' => $media->mime_type,
+                'createdAt' => $media->created_at->toISOString(),
+            ])->toArray(),
+            'attachmentsCount' => $this->getMedia('attachments')->count(),
             'resetCount' => $this->when($this->relationLoaded('resets'), fn () => $this->resets->count()),
             'user' => $this->when($this->relationLoaded('user'), fn () => [
                 'id' => $this->user->id,

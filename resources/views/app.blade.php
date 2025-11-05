@@ -14,8 +14,13 @@
         <link rel="manifest" href="/favicon/site.webmanifest" />
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+        <link rel="dns-prefetch" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Resource hints for static assets -->
+        <link rel="preload" href="/logo.png" as="image" type="image/png">
+        <link rel="prefetch" href="/img_1.jpg" as="image" type="image/jpeg">
 
         <!-- Scripts -->
         @routes

@@ -92,6 +92,12 @@ class Custodianship extends Model implements HasMedia
         return $this->hasMany(Download::class);
     }
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments')
+            ->useDisk(config('media-library.disk_name'));
+    }
+
     public function scopeOrderByDefault(Builder $query): Builder
     {
         $now = Carbon::now();
@@ -126,7 +132,7 @@ class Custodianship extends Model implements HasMedia
 
     public function getDeliveryStatusAttribute(): ?string
     {
-        if (! in_array($this->status, ['delivering', 'completed'])) {
+        if ($this->status !== 'completed') {
             return null;
         }
 
@@ -197,12 +203,6 @@ class Custodianship extends Model implements HasMedia
 
         if ($stats['delivered'] === $stats['total']) {
             $this->update(['status' => 'completed']);
-
-            return;
-        }
-
-        if ($stats['pending'] > 0) {
-            $this->update(['status' => 'delivering']);
 
             return;
         }

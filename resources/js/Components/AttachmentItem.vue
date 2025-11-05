@@ -40,7 +40,10 @@ const formattedSize = computed(() => {
 })
 
 const downloadUrl = computed(() => {
-    return `/custodianships/${props.custodianshipUuid}/attachments/${props.attachment.id}/download`
+    return route('custodianships.attachments.download', {
+        custodianship: props.custodianshipUuid,
+        attachment: props.attachment.id,
+    })
 })
 
 const handleDownload = () => {

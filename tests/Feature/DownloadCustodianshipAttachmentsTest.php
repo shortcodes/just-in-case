@@ -14,6 +14,12 @@ class DownloadCustodianshipAttachmentsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['media-library.disk_name' => 'public']);
+    }
+
     public function test_successful_download_is_logged_to_database(): void
     {
         Storage::fake('public');

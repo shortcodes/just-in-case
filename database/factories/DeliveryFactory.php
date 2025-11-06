@@ -23,6 +23,8 @@ class DeliveryFactory extends Factory
             'mailgun_message_id' => null,
             'status' => 'pending',
             'delivered_at' => null,
+            'attempt_number' => 1,
+            'max_attempts' => 3,
         ];
     }
 

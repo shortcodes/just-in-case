@@ -85,6 +85,11 @@ The model provides real-time delivery statistics via the `delivery_stats` attrib
 - `recipient_email`: Snapshot of email at send time
 - `mailgun_message_id`: Message ID from Mailgun API response
 - `status`: ENUM('pending', 'delivered', 'failed') - Individual delivery status
+- `attempt_number`: Current attempt number (default: 1)
+- `max_attempts`: Maximum retry attempts (default: 3)
+- `last_retry_at`: Timestamp of last retry attempt
+- `next_retry_at`: Timestamp of next scheduled retry
+- `error_message`: Error message from last failed attempt
 - `delivered_at`: Timestamp when Mailgun confirmed delivery
 
 ### Status Transition Flow
@@ -264,7 +269,7 @@ Learn more: https://justincase.com
 - **custodianships table**: `status` (draft/active/completed), `next_trigger_at`, `uuid`
   - Note: `delivery_status` is a computed attribute, not stored in database
 - **recipients table**: Email addresses for each custodianship
-- **deliveries table**: Per-recipient tracking with `mailgun_message_id`, `status` (pending/delivered/failed), `delivered_at`
+- **deliveries table**: Per-recipient tracking with `mailgun_message_id`, `status` (pending/delivered/failed), `attempt_number`, `max_attempts`, `last_retry_at`, `next_retry_at`, `error_message`, `delivered_at`
 - **custodianship_messages table**: 1:1 relationship storing encrypted message content
 - **media table**: Spatie media library for attachment storage (polymorphic relationship)
 - **notifications table**: Standard Laravel notifications table (database channel for UI notifications)

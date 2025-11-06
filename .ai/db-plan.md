@@ -53,7 +53,6 @@
 | `user_id` | BIGINT UNSIGNED | NOT NULL, FK → users(id) ON DELETE CASCADE | Właściciel powiernictwa |
 | `name` | VARCHAR(255) | NOT NULL | Nazwa powiernictwa |
 | `status` | ENUM('draft', 'active', 'completed') | NOT NULL, DEFAULT 'draft' | Status powiernictwa |
-| `delivery_status` | ENUM('pending', 'sent', 'delivered', 'failed', 'bounced') | NULL | Status dostarczenia wiadomości |
 | `interval` | VARCHAR(20) | NOT NULL | Interwał w formacie ISO 8601 |
 | `last_reset_at` | TIMESTAMP | NULL | Timestamp ostatniego resetu timera |
 | `next_trigger_at` | TIMESTAMP | NULL | Timestamp wygaśnięcia timera |
@@ -70,6 +69,8 @@
 
 **Foreign Keys:**
 - `user_id` REFERENCES `users(id)` ON DELETE CASCADE
+
+**Uwaga:** Kolumna `delivery_status` nie istnieje w bazie - jest to computed attribute w modelu Eloquent.
 
 ---
 
@@ -154,6 +155,11 @@ Struktura Spatie laravel-medialibrary.
 | `recipient_email` | VARCHAR(255) | NOT NULL | Snapshot emaila odbiorcy |
 | `mailgun_message_id` | VARCHAR(255) | NULL | Message ID z Mailgun |
 | `status` | ENUM('pending', 'delivered', 'failed') | NOT NULL, DEFAULT 'pending' | Finalny status dostarczenia |
+| `attempt_number` | TINYINT UNSIGNED | NOT NULL, DEFAULT 1 | Numer aktualnej próby dostarczenia |
+| `max_attempts` | TINYINT UNSIGNED | NOT NULL, DEFAULT 3 | Maksymalna liczba prób |
+| `last_retry_at` | TIMESTAMP | NULL | Timestamp ostatniej próby ponowienia |
+| `next_retry_at` | TIMESTAMP | NULL | Timestamp zaplanowanej następnej próby |
+| `error_message` | TEXT | NULL | Komunikat błędu z ostatniej nieudanej próby |
 | `delivered_at` | TIMESTAMP | NULL | Timestamp dostarczenia |
 | `created_at` | TIMESTAMP | NOT NULL | Timestamp pierwszej próby |
 | `updated_at` | TIMESTAMP | NOT NULL | Timestamp ostatniej aktualizacji |
@@ -162,6 +168,7 @@ Struktura Spatie laravel-medialibrary.
 - PRIMARY KEY: `id`
 - INDEX: `mailgun_message_id`
 - **COMPOSITE INDEX**: `(custodianship_id, recipient_id, status)`
+- **COMPOSITE INDEX**: `(status, next_retry_at)`
 
 **Foreign Keys:**
 - `custodianship_id` REFERENCES `custodianships(id)` ON DELETE CASCADE
@@ -269,7 +276,6 @@ classDiagram
         +BIGINT user_id FK
         +VARCHAR(255) name
         +ENUM status
-        +ENUM delivery_status
         +VARCHAR(20) interval
         +TIMESTAMP last_reset_at
         +TIMESTAMP next_trigger_at
@@ -330,12 +336,18 @@ classDiagram
         +VARCHAR(255) recipient_email
         +VARCHAR(255) mailgun_message_id
         +ENUM status
+        +TINYINT attempt_number
+        +TINYINT max_attempts
+        +TIMESTAMP last_retry_at
+        +TIMESTAMP next_retry_at
+        +TEXT error_message
         +TIMESTAMP delivered_at
         +TIMESTAMP created_at
         +TIMESTAMP updated_at
         --
         INDEX: mailgun_message_id
-        COMPOSITE: (custodianship_id, recipient_id, final_status)
+        COMPOSITE: (custodianship_id, recipient_id, status)
+        COMPOSITE: (status, next_retry_at)
     }
 
     class resets {
@@ -403,6 +415,7 @@ classDiagram
 
 ### 3.2 Kluczowe indeksy
 - `custodianships`: index `(status, next_trigger_at)` - **KRYTYCZNY** dla cron job sprawdzającego timery co minutę
+- `deliveries`: index `(status, next_retry_at)` - **KRYTYCZNY** dla cron job ponownych prób dostarczenia
 - `recipients`: unique constraint `(custodianship_id, email)` - zapobiega duplikatom
 - `resets`, `downloads`: composite indexes dla audit queries
 
@@ -416,15 +429,17 @@ User → Custodianships → (Messages, Media, Recipients, Resets, Deliveries, Do
 
 1. `users`
 2. `password_reset_tokens`
-3. `custodianships`
-4. `custodianship_messages`
-5. `recipients`
-6. `media` (Spatie)
-7. `deliveries`
-8. `delivery_attempts`
+3. `cache`
+4. `jobs`
+5. `media` (Spatie)
+6. `custodianships`
+7. `custodianship_messages`
+8. `recipients`
 9. `resets`
-10. `downloads`
+10. `deliveries`
 11. `notifications`
+12. `downloads`
+13. `add_retry_columns_to_deliveries` (modyfikacja deliveries)
 
 ---
 

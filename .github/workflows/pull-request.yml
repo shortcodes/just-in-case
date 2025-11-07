@@ -87,6 +87,7 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
       AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
+      APP_KEY: ${{ secrets.APP_KEY }}
 
     steps:
       - name: Checkout code

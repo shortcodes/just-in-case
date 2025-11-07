@@ -67,6 +67,7 @@ jobs:
       QUEUE_CONNECTION: sync
       MAIL_MAILER: array
       APP_URL: http://localhost:8000
+      APP_DEBUG: false
 
     steps:
       - name: Checkout code

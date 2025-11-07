@@ -1,0 +1,199 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, fileinfo, pdo, tokenizer, openssl, zip, curl, gd
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Laravel Pint
+        run: ./vendor/bin/pint --test
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, fileinfo, pdo, pdo_sqlite, tokenizer, openssl, zip, curl, gd
+          coverage: xdebug
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run unit tests with coverage
+        run: php artisan test --testsuite=Unit --coverage-clover coverage-unit.xml
+
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v5
+        with:
+          name: coverage-unit
+          path: coverage-unit.xml
+          retention-days: 30
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    env:
+      APP_ENV: integration
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+      AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, fileinfo, pdo, pdo_sqlite, tokenizer, openssl, zip, curl, gd
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          touch database/database.sqlite
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Start Laravel server
+        run: php artisan serve &
+        env:
+          APP_URL: http://localhost:8000
+
+      - name: Wait for server to be ready
+        run: |
+          timeout 30 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done' || exit 1
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test --project=chromium
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  status-comment:
+    name: Post Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, e2e-tests]
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: Download unit test coverage
+        uses: actions/download-artifact@v5
+        with:
+          name: coverage-unit
+        continue-on-error: true
+
+      - name: Create status comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const lintStatus = '${{ needs.lint.result }}';
+            const unitStatus = '${{ needs.unit-tests.result }}';
+            const e2eStatus = '${{ needs.e2e-tests.result }}';
+
+            const statusEmoji = (status) => {
+              switch(status) {
+                case 'success': return '✅';
+                case 'failure': return '❌';
+                case 'cancelled': return '⚠️';
+                default: return '⏭️';
+              }
+            };
+
+            const body = `## Pull Request Validation Results
+
+            | Job | Status |
+            |-----|--------|
+            | Code Linting | ${statusEmoji(lintStatus)} ${lintStatus} |
+            | Unit Tests | ${statusEmoji(unitStatus)} ${unitStatus} |
+            | E2E Tests | ${statusEmoji(e2eStatus)} ${e2eStatus} |
+
+            ${lintStatus === 'success' && unitStatus === 'success' && e2eStatus === 'success'
+              ? '### ✅ All checks passed! This PR is ready for review.'
+              : '### ⚠️ Some checks failed. Please review the failed jobs above.'}
+
+            ---
+            *Workflow run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

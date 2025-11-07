@@ -1,0 +1,271 @@
+name: Production Deployment
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Production Assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, fileinfo, pdo, tokenizer, openssl, zip, curl, gd
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies (production)
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Create deployment artifact
+        run: |
+          tar -czf deployment.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='storage' \
+            --exclude='.env' \
+            ./
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-artifact
+          path: deployment.tar.gz
+          retention-days: 1
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, fileinfo, pdo, pdo_sqlite, tokenizer, openssl, zip, curl, gd
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+          touch database/database.sqlite
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Run PHPUnit tests (Unit + Feature)
+        run: php artisan test --testsuite=Unit,Feature
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Start Laravel server
+        run: php artisan serve &
+        env:
+          APP_URL: http://localhost:8000
+
+      - name: Wait for server to be ready
+        run: |
+          timeout 30 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done' || exit 1
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test --project=chromium
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, test]
+
+    env:
+      DEPLOY_USER: ${{ vars.DEPLOY_SSH_USER }}
+      DEPLOY_HOST: ${{ vars.DEPLOY_SSH_HOST }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_DESTINATION }}
+      RELEASE_NAME: ${{ github.sha }}
+
+    steps:
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-artifact
+
+      - name: Extract artifact
+        run: tar -xzf deployment.tar.gz
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ env.DEPLOY_PORT }} -H ${{ env.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create release directory on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} \
+            "mkdir -p ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}"
+
+      - name: Deploy files to server via rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }}" \
+            ./ ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}/
+
+      - name: Create shared directories
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            if [ ! -d "${{ env.DEPLOY_PATH }}/shared" ]; then
+              mkdir -p ${{ env.DEPLOY_PATH }}/shared
+            fi
+          EOF
+
+      - name: Setup shared storage
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            if [ ! -d "${{ env.DEPLOY_PATH }}/shared/storage" ]; then
+              cp -rf ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}/storage ${{ env.DEPLOY_PATH }}/shared/
+              chmod -R 775 ${{ env.DEPLOY_PATH }}/shared/storage
+            fi
+          EOF
+
+      - name: Link shared storage to release
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            rm -rf ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}/storage
+            ln -s ${{ env.DEPLOY_PATH }}/shared/storage ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}/storage
+          EOF
+
+      - name: Copy .env file to release
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            if [ -f "${{ env.DEPLOY_PATH }}/shared/.env" ]; then
+              cp ${{ env.DEPLOY_PATH }}/shared/.env ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}/.env
+            else
+              echo "Warning: .env file not found in shared directory"
+              exit 1
+            fi
+          EOF
+
+      - name: Run database migrations
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}
+            php artisan migrate --force
+          EOF
+
+      - name: Create storage link
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}
+            php artisan storage:link
+          EOF
+
+      - name: Optimize Laravel
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+          EOF
+
+      - name: Activate new release
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}
+            if [ -L "latest" ]; then
+              rm latest
+            fi
+            ln -s ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }} latest
+          EOF
+
+      - name: Restart queue workers
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}/releases/${{ env.RELEASE_NAME }}
+            php artisan queue:restart
+          EOF
+
+      - name: Clean old releases
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_PORT }} ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}/releases
+            ls -1tr | head -n -10 | xargs -r rm -rf
+          EOF
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: Send notification via Mailgun API
+        run: |
+          curl -s --user 'api:${{ secrets.MAILGUN_SECRET }}' \
+            https://api.mailgun.net/v3/${{ vars.MAILGUN_DOMAIN }}/messages \
+            -F from='Deployments <${{ vars.MAIL_FROM_ADDRESS }}>' \
+            -F to='${{ vars.NOTIFICATION_EMAIL }}' \
+            -F subject='Deployment ${{ needs.deploy.result }}: ${{ github.repository }} - ${{ github.ref_name }}' \
+            -F text='Deployment Status: ${{ needs.deploy.result }}
+
+          Repository: ${{ github.repository }}
+          Tag: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+          Application URL: ${{ vars.APP_URL }}
+
+          GitHub Actions Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Deployed at: ${{ github.event.head_commit.timestamp }}'

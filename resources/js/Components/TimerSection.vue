@@ -68,7 +68,7 @@ const nextTriggerText = computed(() => {
 </script>
 
 <template>
-    <Card>
+    <Card data-testid="timer-section">
         <CardHeader>
             <CardTitle>{{ trans('Timer') }}</CardTitle>
         </CardHeader>

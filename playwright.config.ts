@@ -14,6 +14,9 @@ export default defineConfig<LaravelOptions>({
     laravelBaseUrl: 'http://localhost/playwright',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    laravelEnv: {
+      APP_LOCALE: 'en',
+    },
   },
 
   projects: [

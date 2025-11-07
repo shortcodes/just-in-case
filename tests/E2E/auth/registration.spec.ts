@@ -1,11 +1,12 @@
 import { test } from '@hyvor/laravel-playwright';
 import { expect } from '@playwright/test';
+import { resetDatabase } from '../helpers/database.helpers';
 
 test.describe.configure({ mode: 'serial' });
 
 test.describe('User Registration', () => {
   test.beforeAll(async ({ laravel }) => {
-    await laravel.artisan('migrate:fresh');
+    await resetDatabase(laravel);
   });
 
   test('user can register with valid credentials', async ({ page }) => {

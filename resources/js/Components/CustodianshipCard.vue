@@ -69,7 +69,7 @@ const displayStatus = computed(() => {
 </script>
 
 <template>
-    <Card :class="cardClass">
+    <Card :class="cardClass" data-testid="custodianship-card">
         <CardContent class="p-6">
             <div class="space-y-4">
                 <!-- Header -->

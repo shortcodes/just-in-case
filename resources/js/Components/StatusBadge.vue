@@ -66,6 +66,7 @@ const statusLabel = computed(() => {
 
 <template>
     <Badge
+        data-testid="status-badge"
         :variant="badgeVariant"
         :class="badgeClass"
     >

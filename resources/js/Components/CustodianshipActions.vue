@@ -62,6 +62,7 @@ const toggleRecipientMessageTooltip = () => {
         <!-- Activate button for drafts and reactivation -->
         <ConfirmableButton
             v-if="isDraft || canActivate"
+            data-testid="activate-button"
             :label="trans('Activate')"
             :confirm-label="trans('Confirm Activation')"
             size="default"
@@ -106,6 +107,7 @@ const toggleRecipientMessageTooltip = () => {
         <!-- Reset button for active custodianships -->
         <ConfirmableButton
             v-if="canReset"
+            data-testid="reset-timer-button"
             :label="trans('Reset Timer')"
             size="default"
             :disabled="!canReset || isResetting"

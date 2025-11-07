@@ -5,11 +5,11 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
-import type { LoginFormData, LoginPageProps } from '@/types/auth'
+import type { LoginPageProps } from '@/types/auth'
 
 const props = defineProps<LoginPageProps>()
 
-const form = useForm<LoginFormData>({
+const form = useForm({
     email: '',
     password: '',
     remember: false,

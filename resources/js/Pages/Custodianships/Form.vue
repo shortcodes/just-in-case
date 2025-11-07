@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import StorageIndicator from '@/Components/StorageIndicator.vue'
 import { useTrans } from '@/composables/useTrans'
-import type { CreateCustodianshipPageProps, EditCustodianshipPageProps, TempAttachment, CreateCustodianshipFormData } from '@/types/models'
+import type { CreateCustodianshipPageProps, EditCustodianshipPageProps, TempAttachment } from '@/types/models'
 
 type CustodianshipFormProps = CreateCustodianshipPageProps | EditCustodianshipPageProps
 
@@ -41,7 +41,7 @@ const parseIntervalDays = (days: number): { value: number, unit: string } => {
     return { value: Math.round(days), unit: 'days' }
 }
 
-const getInitialFormData = (): CreateCustodianshipFormData => {
+const getInitialFormData = () => {
     if (isEditMode.value && existingCustodianship.value) {
         const custodianship = existingCustodianship.value
         const interval = parseIntervalDays(custodianship.intervalDays || 90)
@@ -99,7 +99,7 @@ const breadcrumbs = computed(() => [
     ),
 ])
 
-const form = useForm<CreateCustodianshipFormData>(getInitialFormData())
+const form = useForm(getInitialFormData())
 
 const uploadedAttachments = ref<TempAttachment[]>(getInitialUploadedAttachments())
 const isDragging = ref(false)

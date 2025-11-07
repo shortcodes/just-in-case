@@ -4,11 +4,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
-import type { RegisterFormData, RegisterPageProps } from '@/types/auth'
+import type { RegisterPageProps } from '@/types/auth'
 
 const props = defineProps<RegisterPageProps>()
 
-const form = useForm<RegisterFormData>({
+const form = useForm({
     name: '',
     email: '',
     password: '',

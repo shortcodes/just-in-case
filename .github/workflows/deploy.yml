@@ -66,6 +66,7 @@ jobs:
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
       MAIL_MAILER: array
+      APP_URL: http://localhost:8000
 
     steps:
       - name: Checkout code
@@ -110,8 +111,6 @@ jobs:
 
       - name: Start Laravel server
         run: php artisan serve &
-        env:
-          APP_URL: http://localhost:8000
 
       - name: Wait for server to be ready
         run: |
@@ -119,8 +118,6 @@ jobs:
 
       - name: Run Playwright E2E tests
         run: npx playwright test --project=chromium
-        env:
-          APP_URL: http://localhost:8000
 
   deploy:
     name: Deploy to Production

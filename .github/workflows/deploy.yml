@@ -119,6 +119,8 @@ jobs:
 
       - name: Run Playwright E2E tests
         run: npx playwright test --project=chromium
+        env:
+          APP_URL: http://localhost:8000
 
   deploy:
     name: Deploy to Production

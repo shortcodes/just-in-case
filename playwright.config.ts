@@ -10,8 +10,8 @@ export default defineConfig<LaravelOptions>({
   reporter: 'list',
 
   use: {
-    baseURL: process.env.APP_URL || 'http://localhost:8000',
-    laravelBaseUrl: `${process.env.APP_URL || 'http://localhost:8000'}/playwright`,
+    baseURL: process.env.APP_URL || 'http://localhost',
+    laravelBaseUrl: `${process.env.APP_URL || 'http://localhost'}/playwright`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     laravelEnv: {

@@ -38,14 +38,15 @@ jobs:
 
       - name: Create deployment artifact
         run: |
-          tar -czf deployment.tar.gz \
+          tar -czf ../deployment.tar.gz \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='tests' \
             --exclude='storage' \
             --exclude='.env' \
-            ./
+            .
+          mv ../deployment.tar.gz ./
 
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v4

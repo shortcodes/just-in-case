@@ -88,7 +88,6 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
       AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
-      APP_KEY: ${{ secrets.APP_KEY }}
       APP_URL: http://localhost:8000
 
     steps:
@@ -152,7 +151,9 @@ jobs:
           sed -i "s|^DB_DATABASE=.*|DB_DATABASE=${{ github.workspace }}/database/database.sqlite|" .env
 
       - name: Generate application key
-        run: php artisan key:generate
+        run: |
+          php artisan key:generate
+          echo "APP_KEY generated: $(grep APP_KEY .env | cut -d '=' -f2-)"
 
       - name: Create database
         run: |

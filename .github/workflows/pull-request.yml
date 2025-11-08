@@ -77,7 +77,7 @@ jobs:
     env:
       APP_ENV: testing
       DB_CONNECTION: sqlite
-      DB_DATABASE: database/database.sqlite
+      DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
       CACHE_DRIVER: array
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
@@ -150,7 +150,11 @@ jobs:
         run: php artisan key:generate
 
       - name: Create database
-        run: touch database/database.sqlite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+          chmod 664 database/database.sqlite
+          chmod 775 database
 
       - name: Debug .env file
         run: |

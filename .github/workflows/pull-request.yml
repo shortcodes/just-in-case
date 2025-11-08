@@ -1,7 +1,7 @@
 name: Pull Request Validation
 
 on:
-  pull_request:
+  push:
     branches:
       - master
 
@@ -116,26 +116,25 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Create .env from variables
+      - name: Create .env file
         run: |
-          while IFS= read -r line; do
-            if [ -z "$line" ] || [[ "$line" =~ ^#.* ]]; then
-              echo "$line"
-              continue
-            fi
-
-            variableKey=${line%%=*}
-            value=$(echo ${!variableKey})
-
-            if [ -z "$value" ]; then
-              echo "$line"
-            else
-              echo "${line%%=*}=$value"
-            fi
-          done < .env.example > .env
+          cp .env.example .env
+          echo "" >> .env
+          echo "# CI/CD Overrides" >> .env
+          echo "APP_ENV=testing" >> .env
+          echo "APP_URL=http://localhost:8000" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=database/database.sqlite" >> .env
 
       - name: Generate application key
         run: php artisan key:generate
+
+      - name: Debug .env file
+        run: |
+          echo "=== Checking APP_ENV in .env ==="
+          grep APP_ENV .env
+          echo "=== Checking if playwright routes are loaded ==="
+          php artisan route:list --path=playwright
 
       - name: Create database
         run: touch database/database.sqlite

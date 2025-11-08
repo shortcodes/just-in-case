@@ -177,7 +177,7 @@ jobs:
           timeout 30 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done' || exit 1
 
       - name: Run Playwright E2E tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project=chromium -x
 
       - name: Upload E2E test results
         if: always()

@@ -62,7 +62,7 @@ jobs:
     env:
       APP_ENV: testing
       DB_CONNECTION: sqlite
-      DB_DATABASE: database/database.sqlite
+      DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
       CACHE_DRIVER: array
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
@@ -127,7 +127,11 @@ jobs:
           done < .env.example > .env
 
       - name: Create database
-        run: touch database/database.sqlite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+          chmod 664 database/database.sqlite
+          chmod 775 database
 
       - name: Generate application key
         run: php artisan key:generate
@@ -149,7 +153,7 @@ jobs:
           timeout 30 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done' || exit 1
 
       - name: Run Playwright E2E tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project=chromium -x
 
   deploy:
     name: Deploy to Production

@@ -146,6 +146,10 @@ jobs:
             fi
           done < .env.example > .env
 
+          # Ensure critical testing environment variables are set
+          sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env
+          sed -i "s|^DB_DATABASE=.*|DB_DATABASE=${{ github.workspace }}/database/database.sqlite|" .env
+
       - name: Generate application key
         run: php artisan key:generate
 

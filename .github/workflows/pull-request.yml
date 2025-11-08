@@ -75,7 +75,7 @@ jobs:
     needs: lint
 
     env:
-      APP_ENV: integration
+      APP_ENV: testing
       DB_CONNECTION: sqlite
       DB_DATABASE: database/database.sqlite
       CACHE_DRIVER: array

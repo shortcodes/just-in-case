@@ -94,6 +94,13 @@ export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Pro
     user = await createAuthenticatedUser(laravel);
   }
 
+  if (process.env.CI) {
+    console.log(`Created user: email=${user.email}, id=${user.id}`);
+    // Verify user exists in database
+    const dbUser = await laravel.select(`SELECT id, email, password FROM users WHERE email = '${user.email}'`);
+    console.log(`User in database: ${JSON.stringify(dbUser)}`);
+  }
+
   await loginUser(page, {
     email: user.email,
     password: 'password' // Must match the factory's default password

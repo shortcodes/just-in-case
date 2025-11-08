@@ -99,8 +99,8 @@ jobs:
       - name: Create .env from variables
         run: |
           while IFS= read -r line; do
-            if [ -z "$line" ]; then
-              echo ""
+            if [ -z "$line" ] || [[ "$line" =~ ^#.* ]]; then
+              echo "$line"
               continue
             fi
 

@@ -116,15 +116,35 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Create .env file
+      - name: Create .env from variables
         run: |
-          cp .env.example .env
-          echo "" >> .env
-          echo "# CI/CD Overrides" >> .env
-          echo "APP_ENV=testing" >> .env
-          echo "APP_URL=http://localhost:8000" >> .env
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=database/database.sqlite" >> .env
+          declare -A seen
+          while IFS= read -r line; do
+            # Skip empty lines and comments
+            if [ -z "$line" ] || [[ "$line" =~ ^[[:space:]]*# ]]; then
+              echo "$line"
+              continue
+            fi
+
+            # Extract variable name
+            variableKey="${line%%=*}"
+
+            # Skip if we've already seen this variable (use first occurrence only)
+            if [[ -n "${seen[$variableKey]}" ]]; then
+              continue
+            fi
+            seen[$variableKey]=1
+
+            # Get value from environment variable
+            value="${!variableKey}"
+
+            # Use environment value if set, otherwise use value from .env.example
+            if [ -n "$value" ]; then
+              echo "${variableKey}=${value}"
+            else
+              echo "$line"
+            fi
+          done < .env.example > .env
 
       - name: Generate application key
         run: php artisan key:generate

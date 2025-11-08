@@ -96,11 +96,29 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Prepare environment
+      - name: Create .env from variables
         run: |
-          cp .env.example .env
-          php artisan key:generate
-          touch database/database.sqlite
+          while IFS= read -r line; do
+            if [ -z "$line" ]; then
+              echo ""
+              continue
+            fi
+
+            variableKey=${line%%=*}
+            value=$(echo ${!variableKey})
+
+            if [ -z "$value" ]; then
+              echo "$line"
+            else
+              echo "${line%%=*}=$value"
+            fi
+          done < .env.example > .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Create database
+        run: touch database/database.sqlite
 
       - name: Run migrations
         run: php artisan migrate --force
@@ -112,7 +130,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Start Laravel server
-        run: APP_ENV=testing php artisan serve &
+        run: php artisan serve &
 
       - name: Wait for server to be ready
         run: |

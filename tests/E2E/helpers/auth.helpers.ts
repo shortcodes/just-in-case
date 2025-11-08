@@ -73,13 +73,14 @@ export async function createAuthenticatedUser(
   credentials: UserCredentials = {
     name: 'Test User',
     email: 'test@example.com',
-    password: 'password123'
+    password: 'password'
   }
 ): Promise<any> {
+  // Don't pass password to factory - let it use the default hashed 'password'
+  // The factory uses Hash::make('password') which can't be overridden with plain text
   return await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,
-    password: credentials.password,
     email_verified_at: new Date().toISOString()
   });
 }
@@ -91,7 +92,7 @@ export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Pro
 
   await loginUser(page, {
     email: user.email,
-    password: 'password123'
+    password: 'password' // Must match the factory's default password
   });
 
   return user;

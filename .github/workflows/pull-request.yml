@@ -149,15 +149,15 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
+      - name: Create database
+        run: touch database/database.sqlite
+
       - name: Debug .env file
         run: |
           echo "=== Checking APP_ENV in .env ==="
           grep APP_ENV .env
           echo "=== Checking if playwright routes are loaded ==="
           php artisan route:list --path=playwright
-
-      - name: Create database
-        run: touch database/database.sqlite
 
       - name: Run migrations
         run: php artisan migrate --force

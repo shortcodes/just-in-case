@@ -126,11 +126,11 @@ jobs:
             fi
           done < .env.example > .env
 
-      - name: Generate application key
-        run: php artisan key:generate
-
       - name: Create database
         run: touch database/database.sqlite
+
+      - name: Generate application key
+        run: php artisan key:generate
 
       - name: Run migrations
         run: php artisan migrate --force

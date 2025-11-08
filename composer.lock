@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13df64d8b48144b227317557be036025",
+    "content-hash": "be5ee37e0f13c8e2ed770c486c123ca8",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -7687,6 +7687,65 @@
                 "source": "https://github.com/hamcrest/hamcrest-php/tree/v2.1.1"
             },
             "time": "2025-04-30T06:54:44+00:00"
+        },
+        {
+            "name": "hyvor/laravel-playwright",
+            "version": "2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hyvor/laravel-playwright.git",
+                "reference": "14e486eb4c254605dbc8d64a7239af59e0ad4bef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hyvor/laravel-playwright/zipball/14e486eb4c254605dbc8d64a7239af59e0ad4bef",
+                "reference": "14e486eb4c254605dbc8d64a7239af59e0ad4bef",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "orchestra/testbench": "^9.0",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^10.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Hyvor\\LaravelPlaywright\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Hyvor\\LaravelPlaywright\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Supun",
+                    "email": "supun@hyvor.com"
+                }
+            ],
+            "description": "Laravel and Playwright E2E Testing",
+            "keywords": [
+                "e2e",
+                "laravel",
+                "playwright",
+                "testing"
+            ],
+            "support": {
+                "issues": "https://github.com/hyvor/laravel-playwright/issues",
+                "source": "https://github.com/hyvor/laravel-playwright/tree/2.0.2"
+            },
+            "time": "2025-03-12T04:16:29+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",

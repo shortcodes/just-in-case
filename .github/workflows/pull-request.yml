@@ -82,6 +82,7 @@ jobs:
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
       MAIL_MAILER: array
+      FILESYSTEM_DISK: local
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
@@ -181,7 +182,10 @@ jobs:
           timeout 30 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done' || exit 1
 
       - name: Run Playwright E2E tests
-        run: npx playwright test --project=chromium -x
+        run: |
+          echo "APP_URL is: $APP_URL"
+          echo "Playwright will use baseURL: ${APP_URL:-http://localhost}"
+          npx playwright test --project=chromium -x
 
       - name: Upload E2E test results
         if: always()

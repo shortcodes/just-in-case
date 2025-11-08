@@ -25,6 +25,22 @@ export async function registerUser(page: Page, credentials: UserCredentials): Pr
 export async function loginUser(page: Page, credentials: Pick<UserCredentials, 'email' | 'password'>): Promise<void> {
   await page.goto('/login');
 
+  // Debug: log page title and URL
+  if (process.env.CI) {
+    const title = await page.title();
+    const url = page.url();
+    console.log(`Login page - Title: "${title}", URL: "${url}"`);
+
+    // Check if email field exists
+    const emailExists = await page.locator('#email').count();
+    console.log(`Email field count: ${emailExists}`);
+
+    if (emailExists === 0) {
+      const bodyText = await page.locator('body').textContent();
+      console.log(`Page body text (first 500 chars): ${bodyText?.substring(0, 500)}`);
+    }
+  }
+
   await page.fill('#email', credentials.email);
   await page.fill('#password', credentials.password);
 

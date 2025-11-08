@@ -46,6 +46,20 @@ export async function loginUser(page: Page, credentials: Pick<UserCredentials, '
 
   const navigationPromise = page.waitForURL(/\/custodianships|\/dashboard/);
   await page.click('button[type="submit"]');
+
+  if (process.env.CI) {
+    // Wait a bit and check where we ended up
+    await page.waitForTimeout(2000);
+    const currentUrl = page.url();
+    console.log(`After login click, current URL: "${currentUrl}"`);
+
+    // Check for error messages
+    const bodyText = await page.locator('body').textContent();
+    if (bodyText?.includes('error') || bodyText?.includes('Error')) {
+      console.log(`Page body (first 500 chars): ${bodyText.substring(0, 500)}`);
+    }
+  }
+
   await navigationPromise;
 }
 

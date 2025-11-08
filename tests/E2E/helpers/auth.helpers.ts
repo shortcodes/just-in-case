@@ -53,11 +53,15 @@ export async function loginUser(page: Page, credentials: Pick<UserCredentials, '
     const currentUrl = page.url();
     console.log(`After login click, current URL: "${currentUrl}"`);
 
-    // Check for error messages
-    const bodyText = await page.locator('body').textContent();
-    if (bodyText?.includes('error') || bodyText?.includes('Error')) {
-      console.log(`Page body (first 500 chars): ${bodyText.substring(0, 500)}`);
+    // Check for validation errors
+    const errorText = await page.locator('.text-sm.text-red-600, [role="alert"]').allTextContents();
+    if (errorText.length > 0) {
+      console.log(`Validation errors: ${JSON.stringify(errorText)}`);
     }
+
+    // Check if email field still exists (would mean we're still on login page)
+    const stillOnLogin = await page.locator('#email').count();
+    console.log(`Still on login page: ${stillOnLogin > 0}`);
   }
 
   await navigationPromise;

@@ -112,7 +112,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Start Laravel server
-        run: php artisan serve &
+        run: APP_ENV=testing php artisan serve &
 
       - name: Wait for server to be ready
         run: |

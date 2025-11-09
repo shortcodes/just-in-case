@@ -1,5 +1,5 @@
 <template>
-    <img src="/logo.svg" alt="Application Logo" v-bind="$attrs" />
+    <img src="/logo.png" alt="Application Logo" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">

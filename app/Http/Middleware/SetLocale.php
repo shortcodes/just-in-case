@@ -10,11 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         $locale = $request->segment(1);
@@ -25,6 +20,11 @@ class SetLocale
             session(['locale' => $locale]);
         } elseif (session()->has('locale')) {
             App::setLocale(session('locale'));
+        } else {
+            $browserLanguage = $request->getPreferredLanguage(['pl', 'en']);
+            $detectedLocale = $browserLanguage === 'pl' ? 'pl' : 'en';
+            App::setLocale($detectedLocale);
+            session(['locale' => $detectedLocale]);
         }
 
         URL::defaults(['locale' => App::getLocale()]);

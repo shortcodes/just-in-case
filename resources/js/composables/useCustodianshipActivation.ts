@@ -44,8 +44,12 @@ export function useCustodianshipActions(
         return isDraft.value && emailVerifiedRef.value && hasRecipients.value && hasMessage.value
     })
 
+    const hasPendingDeliveries = computed(() => {
+        return custodianshipRef.value.deliveryStatus === 'pending'
+    })
+
     const canActivate = computed(() => {
-        return canActivateFromDraft.value || (isActive.value && isExpired.value)
+        return canActivateFromDraft.value || (isActive.value && isExpired.value && !hasPendingDeliveries.value)
     })
 
     const canReset = computed(() => {

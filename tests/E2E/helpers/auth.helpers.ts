@@ -45,11 +45,11 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Don't pass password to factory - let it use the default hashed 'password'
-  // The factory uses Hash::make('password') which can't be overridden with plain text
+  // Pass password as plain text - the User model's 'hashed' cast will hash it automatically
   return await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,
+    password: credentials.password,
     email_verified_at: new Date().toISOString()
   });
 }

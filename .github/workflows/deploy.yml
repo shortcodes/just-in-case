@@ -56,7 +56,7 @@ jobs:
           retention-days: 1
 
   deploy:
-    nameNow i: Deploy to Production
+    name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [build]
 

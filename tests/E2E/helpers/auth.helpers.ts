@@ -73,5 +73,5 @@ export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Pro
 }
 
 export async function verifyUserEmail(laravel: Laravel, email: string): Promise<void> {
-  await laravel.query('UPDATE users SET email_verified_at = NOW() WHERE email = ?', [email]);
+  await laravel.query("UPDATE users SET email_verified_at = datetime('now') WHERE email = ?", [email]);
 }

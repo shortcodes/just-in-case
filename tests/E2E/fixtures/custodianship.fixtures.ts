@@ -49,24 +49,24 @@ export const intervalOptions = [
 export const testUser = {
   name: 'Test User',
   email: 'testuser@example.com',
-  password: 'password123'
+  password: 'password'
 };
 
 export const testUsers = {
   basic: {
     name: 'Basic User',
     email: 'basic@example.com',
-    password: 'password123'
+    password: 'password'
   },
   withCustodianships: {
     name: 'User With Custodianships',
     email: 'with-custodianships@example.com',
-    password: 'password123'
+    password: 'password'
   },
   atLimit: {
     name: 'User At Limit',
     email: 'at-limit@example.com',
-    password: 'password123'
+    password: 'password'
   }
 };
 

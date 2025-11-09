@@ -41,4 +41,18 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Use a known password for testing purposes.
+     * Password: 'password'
+     * This state uses a static hash to ensure consistency across test runs.
+     */
+    public function withKnownPassword(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            // This is Hash::make('password') with a known bcrypt cost of 10
+            // It will always be the same hash for the same password when using cost 10
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+        ]);
+    }
 }

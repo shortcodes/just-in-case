@@ -45,13 +45,12 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Use factory but let it use default password from factory definition
-  // The factory uses Hash::make('password') which creates a fresh hash
+  // Use factory with withKnownPassword state for consistent password hashing
   return await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,
     email_verified_at: new Date().toISOString()
-  });
+  }, 'withKnownPassword');
 }
 
 export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Promise<any> {

@@ -57,7 +57,7 @@ export async function createAuthenticatedUser(
   await laravel.callFunction(`
     $user = \\App\\Models\\User::find(${user.id});
     $user->password = '${credentials.password}';
-    $user->save();
+    return $user->save();
   `);
 
   return user;

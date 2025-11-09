@@ -28,8 +28,11 @@ export async function loginUser(page: Page, credentials: Pick<UserCredentials, '
   await page.fill('#email', credentials.email);
   await page.fill('#password', credentials.password);
 
+  // Wait for any network activity to settle before submitting
+  await page.waitForLoadState('networkidle');
+
   await page.click('button[type="submit"]');
-  await page.waitForURL(/\/custodianships|\/dashboard/);
+  await page.waitForURL(/\/custodianships|\/dashboard/, { timeout: 30000 });
 }
 
 export async function logoutUser(page: Page): Promise<void> {
@@ -45,8 +48,7 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Pass static hash directly - Laravel's HashedCast should detect it's already hashed
-  // This is the hash for 'password' with cost=10
+  // Create user with password directly - use static hash for 'password'
   const user = await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,

@@ -55,7 +55,7 @@ export interface CustodianshipViewModel {
     lastResetAt: string | null
     nextTriggerAt: string | null
     activatedAt: string | null
-    deliveryStatus?: 'delivered' | 'failed' | 'bounced' | null
+    deliveryStatus?: DeliveryStatus
     recipientsCount?: number
     attachmentsCount?: number
     recipients?: RecipientViewModel[]

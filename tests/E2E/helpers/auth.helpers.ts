@@ -45,12 +45,14 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Use factory with withKnownPassword state for consistent password hashing
+  // Pass a static, known password hash to ensure consistency across test runs
+  // This is the bcrypt hash for 'password' with cost=10
   return await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,
+    password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     email_verified_at: new Date().toISOString()
-  }, 'withKnownPassword');
+  });
 }
 
 export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Promise<any> {

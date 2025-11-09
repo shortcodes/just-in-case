@@ -45,20 +45,14 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Create user via factory without password, then update with static hash
-  // This avoids the model's 'hashed' cast double-hashing
+  // Pass static hash directly - Laravel's HashedCast should detect it's already hashed
+  // This is the hash for 'password' with cost=10
   const user = await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,
-    email_verified_at: new Date().toISOString()
+    email_verified_at: new Date().toISOString(),
+    password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
   });
-
-  // Update password with static bcrypt hash to bypass model's cast
-  // This is the hash for 'password' with cost=10
-  await laravel.query(
-    'UPDATE users SET password = ? WHERE id = ?',
-    ['$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', user.id]
-  );
 
   return user;
 }

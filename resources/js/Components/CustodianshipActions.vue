@@ -59,15 +59,15 @@ const toggleRecipientMessageTooltip = () => {
 
 <template>
     <div class="flex items-center gap-2">
-        <!-- Activate button for drafts and reactivation -->
+        <!-- Activate button for drafts only -->
         <ConfirmableButton
-            v-if="isDraft || canActivate"
+            v-if="isDraft"
             data-testid="activate-button"
             :label="trans('Activate')"
             :confirm-label="trans('Confirm Activation')"
             size="default"
-            :disabled="isDraft && !canActivateFromDraft"
-            :button-class="(isDraft && canActivateFromDraft) || (!isDraft && canActivate) ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'"
+            :disabled="!canActivateFromDraft"
+            :button-class="canActivateFromDraft ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'"
             confirm-button-class="bg-green-600 hover:bg-green-700 text-white"
             @confirm="handleActivate"
         />

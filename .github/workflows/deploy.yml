@@ -217,7 +217,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
             cd ${{ env.DEPLOY_DESTINATION }}/releases
-            ls -1tr | head -n -10 | xargs -r rm -rf
+            ls -1tr | head -n -3 | xargs -r rm -rf
           EOF
 
       - name: Cleanup SSH key

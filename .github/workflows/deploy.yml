@@ -9,6 +9,26 @@ jobs:
   build:
     name: Build Production Assets
     runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      APP_DEBUG: ${{vars.APP_DEBUG }}
+      APP_ENV: ${{vars.APP_ENV }}
+      APP_NAME: ${{vars.APP_NAME }}
+      APP_URL: ${{vars.APP_URL }}
+      AWS_BUCKET: ${{vars.AWS_BUCKET }}
+      AWS_DEFAULT_REGION: ${{vars.AWS_DEFAULT_REGION }}
+      DB_DATABASE: ${{vars.DB_DATABASE }}
+      DB_HOST: ${{vars.DB_HOST }}
+      DB_USERNAME: ${{vars.DB_USERNAME }}
+      MAILGUN_DOMAIN: ${{vars.MAILGUN_DOMAIN }}
+      MAIL_MAILER: ${{vars.MAIL_MAILER }}
+
+      APP_KEY: ${{ secrets.APP_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      MAILGUN_SECRET: ${{ secrets.MAILGUN_SECRET }}
 
     steps:
       - name: Checkout code
@@ -87,6 +107,13 @@ jobs:
           path: deployment.tar.gz
           retention-days: 1
 
+      - name: Upload .env file
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-file
+          path: .env
+          retention-days: 1
+
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
@@ -95,24 +122,6 @@ jobs:
 
     env:
       RELEASE_NAME: ${{ github.sha }}
-      APP_DEBUG: ${{vars.APP_DEBUG }}
-      APP_ENV: ${{vars.APP_ENV }}
-      APP_NAME: ${{vars.APP_NAME }}
-      APP_URL: ${{vars.APP_URL }}
-      AWS_BUCKET: ${{vars.AWS_BUCKET }}
-      AWS_DEFAULT_REGION: ${{vars.AWS_DEFAULT_REGION }}
-      DB_DATABASE: ${{vars.DB_DATABASE }}
-      DB_HOST: ${{vars.DB_HOST }}
-      DB_USERNAME: ${{vars.DB_USERNAME }}
-      MAILGUN_DOMAIN: ${{vars.MAILGUN_DOMAIN }}
-      MAIL_MAILER: ${{vars.MAIL_MAILER }}
-
-      APP_KEY: ${{ secrets.APP_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      MAILGUN_SECRET: ${{ secrets.MAILGUN_SECRET }}
-
       DEPLOY_DESTINATION: ${{ vars.DEPLOY_DESTINATION }}
       DEPLOY_SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
       DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT }}
@@ -123,6 +132,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: deployment-artifact
+
+      - name: Download .env file
+        uses: actions/download-artifact@v4
+        with:
+          name: env-file
 
       - name: Extract artifact
         run: tar -xzf deployment.tar.gz

@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EnvelopeIcon } from '@heroicons/vue/24/outline'
 import type { EmailVerificationBannerProps } from '@/types/components'
+import { useTrans } from '@/composables/useTrans'
 
 defineProps<EmailVerificationBannerProps>()
 
@@ -11,6 +12,7 @@ const emit = defineEmits<{
     resend: []
 }>()
 
+const trans = useTrans()
 const emailSent = ref(false)
 
 const handleResend = () => {
@@ -30,16 +32,15 @@ const handleResend = () => {
                 </div>
                 <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-semibold text-amber-900 mb-1">
-                        Email Verification Required
+                        {{ trans('common.email_verification_banner.title') }}
                     </h3>
-                    <p class="text-sm text-amber-800">
-                        Please verify your email address <span class="font-medium">{{ userEmail }}</span> to activate custodianships and ensure reliable message delivery.
+                    <p class="text-sm text-amber-800" v-html="trans('common.email_verification_banner.message').replace(':email', userEmail)">
                     </p>
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 sm:self-center">
                 <p v-if="emailSent" class="text-sm text-green-700 font-medium">
-                    Verification email sent!
+                    {{ trans('common.email_verification_banner.verification_sent') }}
                 </p>
                 <Button
                     variant="outline"
@@ -47,7 +48,7 @@ const handleResend = () => {
                     class="w-full sm:w-auto border-amber-300 bg-white text-amber-700 hover:bg-amber-50 hover:border-amber-400"
                     @click="handleResend"
                 >
-                    {{ emailSent ? 'Resend' : 'Send Email' }}
+                    {{ emailSent ? trans('common.email_verification_banner.resend') : trans('common.email_verification_banner.send_email') }}
                 </Button>
             </div>
         </div>

@@ -44,9 +44,9 @@ class ExpiredCustodianshipNotification extends Notification implements ShouldQue
         $appName = config('app.name');
 
         $message = (new MailMessage)
-            ->subject(__(':userName sent you an important message - :appName', ['userName' => $userName, 'appName' => $appName]))
-            ->greeting(__('You are receiving this message because :userName stopped resetting their timer in the :appName application.', ['userName' => $userName, 'appName' => $appName]))
-            ->line('**'.__('Here is the message dedicated for you:').'**')
+            ->subject(__('notifications.expired_custodianship.subject', ['userName' => $userName, 'appName' => $appName]))
+            ->greeting(__('notifications.expired_custodianship.greeting', ['userName' => $userName, 'appName' => $appName]))
+            ->line('**'.__('notifications.expired_custodianship.message_header').'**')
             ->line('');
 
         if ($this->delivery) {
@@ -64,8 +64,8 @@ class ExpiredCustodianshipNotification extends Notification implements ShouldQue
 
         if ($hasAttachments) {
             $message->line('')
-                ->line(__('Download attachments:'))
-                ->action(__('Download Attachments'), $downloadUrl);
+                ->line(__('notifications.expired_custodianship.download_attachments'))
+                ->action(__('notifications.expired_custodianship.download_button'), $downloadUrl);
         }
 
         $disclaimerHtml = view('vendor.mail.html.disclaimer', [

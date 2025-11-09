@@ -4,12 +4,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { useTrans } from '@/composables/useTrans'
 
 interface Props {
     status?: string
 }
 
 const props = defineProps<Props>()
+const trans = useTrans()
 
 const form = useForm({
     email: '',
@@ -22,10 +24,10 @@ const submit = (): void => {
 
 <template>
     <GuestLayout
-        title="Forgot your password?"
-        description="No problem. Just enter your email address and we will send you a password reset link."
+        :title="trans('auth.forgot_password.title')"
+        :description="trans('auth.forgot_password.description')"
     >
-        <Head title="Forgot Password" />
+        <Head :title="trans('auth.forgot_password.page_title')" />
 
         <div
             v-if="status"
@@ -37,12 +39,12 @@ const submit = (): void => {
         <form @submit.prevent="submit">
             <div class="grid gap-4">
                 <div class="grid gap-2">
-                    <Label for="email">Email</Label>
+                    <Label for="email">{{ trans('auth.forgot_password.email') }}</Label>
                     <Input
                         id="email"
                         type="email"
                         v-model="form.email"
-                        placeholder="Enter your email"
+                        :placeholder="trans('auth.forgot_password.email_placeholder')"
                         required
                         autofocus
                         autocomplete="email"
@@ -59,19 +61,19 @@ const submit = (): void => {
                     class="w-full"
                     :disabled="form.processing"
                 >
-                    <span v-if="form.processing">Sending...</span>
-                    <span v-else>Email Password Reset Link</span>
+                    <span v-if="form.processing">{{ trans('auth.forgot_password.sending') }}</span>
+                    <span v-else>{{ trans('auth.forgot_password.send_link') }}</span>
                 </Button>
             </div>
         </form>
 
         <div class="mt-4 text-center text-sm">
-            Remember your password?
+            {{ trans('auth.forgot_password.remember_password') }}
             <Link
                 :href="route('login')"
                 class="underline"
             >
-                Sign in
+                {{ trans('auth.forgot_password.sign_in') }}
             </Link>
         </div>
     </GuestLayout>

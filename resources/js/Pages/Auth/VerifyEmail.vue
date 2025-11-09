@@ -3,12 +3,14 @@ import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { useTrans } from '@/composables/useTrans'
 
 interface Props {
     status?: string
 }
 
 const props = defineProps<Props>()
+const trans = useTrans()
 
 const form = useForm({})
 
@@ -23,16 +25,16 @@ const verificationLinkSent = computed(
 
 <template>
     <GuestLayout
-        title="Verify your email"
-        description="Thanks for signing up! Please verify your email address by clicking on the link we just emailed to you."
+        :title="trans('auth.verify_email.title')"
+        :description="trans('auth.verify_email.description')"
     >
-        <Head title="Email Verification" />
+        <Head :title="trans('auth.verify_email.page_title')" />
 
         <div
             v-if="verificationLinkSent"
             class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 border border-green-200"
         >
-            A new verification link has been sent to your email address.
+            {{ trans('auth.verify_email.link_sent') }}
         </div>
 
         <form @submit.prevent="submit">
@@ -43,8 +45,8 @@ const verificationLinkSent = computed(
                     class="w-full"
                     :disabled="form.processing"
                 >
-                    <span v-if="form.processing">Sending...</span>
-                    <span v-else>Resend Verification Email</span>
+                    <span v-if="form.processing">{{ trans('auth.verify_email.sending') }}</span>
+                    <span v-else>{{ trans('auth.verify_email.resend') }}</span>
                 </Button>
 
                 <Link
@@ -53,7 +55,7 @@ const verificationLinkSent = computed(
                     as="button"
                     class="text-center text-sm underline hover:opacity-80"
                 >
-                    Log Out
+                    {{ trans('auth.verify_email.logout') }}
                 </Link>
             </div>
         </form>

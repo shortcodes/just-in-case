@@ -88,6 +88,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Legal Documents Last Updated
+    |--------------------------------------------------------------------------
+    |
+    | This date indicates when the legal documents (Privacy Policy, Terms of
+    | Service, Legal Disclaimer) were last updated. Update this date when
+    | you make changes to any legal documents.
+    |
+    */
+
+    'legal_documents_last_updated' => env('LEGAL_DOCUMENTS_LAST_UPDATED', '2025-01-09'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |

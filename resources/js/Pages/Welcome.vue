@@ -16,6 +16,7 @@ const page = usePage();
 
 const user = computed(() => page.props.auth?.user);
 const isAuthenticated = computed(() => !!user.value);
+const locale = computed(() => (page.props.locale as string) || 'en');
 
 const userNavigation = computed(() => [
     { name: trans('Custodianships'), href: route('custodianships.index') },
@@ -574,9 +575,12 @@ const logout = () => {
                         {{ trans('© 2025 Just In Case. All rights reserved.') }}
                     </p>
 
-                    <div class="flex space-x-6 text-sm text-slate-400">
-                        <a href="#" class="hover:text-white transition-colors">{{ trans('Privacy Policy') }}</a>
-                        <a href="#" class="hover:text-white transition-colors">{{ trans('Terms of Service') }}</a>
+                    <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-slate-400">
+                        <Link :href="route(`legal.privacy.${locale}`)" class="hover:text-white transition-colors">{{ trans('Privacy Policy') }}</Link>
+                        <span class="text-slate-600">|</span>
+                        <Link :href="route(`legal.terms.${locale}`)" class="hover:text-white transition-colors">{{ trans('Terms of Service') }}</Link>
+                        <span class="text-slate-600">|</span>
+                        <Link :href="route(`legal.disclaimer.${locale}`)" class="hover:text-white transition-colors">{{ trans('Legal Disclaimer') }}</Link>
                     </div>
                 </div>
 

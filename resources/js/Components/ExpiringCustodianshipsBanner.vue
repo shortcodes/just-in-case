@@ -1,14 +1,25 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ClockIcon, ExclamationCircleIcon } from '@heroicons/vue/24/outline'
 import type { ExpiringCustodianshipsBannerProps } from '@/types/components'
+import { useTrans } from '@/composables/useTrans'
 
-defineProps<ExpiringCustodianshipsBannerProps>()
+const props = defineProps<ExpiringCustodianshipsBannerProps>()
 
 const emit = defineEmits<{
     resetAll: []
 }>()
+
+const trans = useTrans()
+
+const getMessage = computed(() => {
+    const message = trans('common.expiring_custodianships_banner.message')
+    const parts = message.split('|')
+    const selectedMessage = props.expiringCount === 1 ? parts[0] : (parts[1] || parts[0])
+    return selectedMessage.replace(':count', props.expiringCount.toString())
+})
 
 const handleResetAll = () => {
     emit('resetAll')
@@ -26,7 +37,7 @@ const handleResetAll = () => {
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
                     <h3 class="text-sm font-semibold text-red-900">
-                        Urgent: Custodianships Expiring Soon
+                        {{ trans('common.expiring_custodianships_banner.title') }}
                     </h3>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         {{ expiringCount }}
@@ -35,7 +46,7 @@ const handleResetAll = () => {
                 <div class="flex items-center gap-2 text-sm text-red-800">
                     <ClockIcon class="h-4 w-4" />
                     <span>
-                        {{ expiringCount }} custodianship{{ expiringCount > 1 ? 's' : '' }} will trigger in less than 7 days. Reset timers to prevent automatic message delivery.
+                        {{ getMessage }}
                     </span>
                 </div>
             </div>
@@ -45,7 +56,7 @@ const handleResetAll = () => {
                     class="bg-red-600 text-white hover:bg-red-700"
                     @click="handleResetAll"
                 >
-                    Reset All
+                    {{ trans('common.expiring_custodianships_banner.reset_all') }}
                 </Button>
             </div>
         </div>

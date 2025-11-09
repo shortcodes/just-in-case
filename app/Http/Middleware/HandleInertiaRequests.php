@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'locale' => app()->getLocale(),
             'available_locales' => config('app.available_locales'),
+            'legal_documents_last_updated' => config('app.legal_documents_last_updated'),
             'translations' => $this->getTranslations(),
         ];
     }
@@ -43,17 +44,33 @@ class HandleInertiaRequests extends Middleware
     /**
      * Get translations for the current locale.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     protected function getTranslations(): array
     {
         $locale = app()->getLocale();
-        $translationFile = lang_path("{$locale}.json");
+        $translations = [];
 
-        if (! file_exists($translationFile)) {
-            return [];
+        $jsonFile = lang_path("{$locale}.json");
+        if (file_exists($jsonFile)) {
+            $translations = json_decode(file_get_contents($jsonFile), true) ?? [];
         }
 
-        return json_decode(file_get_contents($translationFile), true) ?? [];
+        $legalFile = lang_path("{$locale}/legal.php");
+        if (file_exists($legalFile)) {
+            $translations['legal'] = require $legalFile;
+        }
+
+        $authFile = lang_path("{$locale}/auth.php");
+        if (file_exists($authFile)) {
+            $translations['auth'] = require $authFile;
+        }
+
+        $commonFile = lang_path("{$locale}/common.php");
+        if (file_exists($commonFile)) {
+            $translations['common'] = require $commonFile;
+        }
+
+        return $translations;
     }
 }

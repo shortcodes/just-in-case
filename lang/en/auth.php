@@ -1,0 +1,91 @@
+<?php
+
+return [
+
+    'login' => [
+        'title' => 'Sign in',
+        'description' => 'Enter your email below to sign in to your account',
+        'page_title' => 'Log in',
+        'email' => 'Email',
+        'password' => 'Password',
+        'forgot_password' => 'Forgot your password?',
+        'remember_me' => 'Remember me',
+        'signing_in' => 'Signing in...',
+        'sign_in' => 'Sign in',
+        'no_account' => 'Don\'t have an account?',
+        'sign_up' => 'Sign up',
+        'email_placeholder' => 'Enter your email',
+        'password_placeholder' => 'Enter your password',
+    ],
+
+    'register' => [
+        'title' => 'Create your account',
+        'description' => 'Enter your details below to create your account',
+        'page_title' => 'Create your account',
+        'name' => 'Name',
+        'email' => 'Email',
+        'password' => 'Password',
+        'confirm_password' => 'Confirm Password',
+        'creating_account' => 'Creating account...',
+        'create_account' => 'Create Account',
+        'have_account' => 'Already have an account?',
+        'sign_in' => 'Sign in',
+        'name_placeholder' => 'Enter your full name',
+        'email_placeholder' => 'Enter your email',
+        'password_placeholder' => 'Enter your password',
+        'confirm_password_placeholder' => 'Confirm your password',
+        'terms_prefix' => 'I have read and accept the',
+        'privacy_policy' => 'Privacy Policy',
+        'and' => 'and',
+        'terms_of_service' => 'Terms of Service',
+        'not_testament' => 'I understand that Just In Case is <strong>NOT a legal testament</strong> or legal service',
+        'read_disclaimer' => 'read disclaimer',
+    ],
+
+    'forgot_password' => [
+        'title' => 'Forgot your password?',
+        'description' => 'No problem. Just enter your email address and we will send you a password reset link.',
+        'page_title' => 'Forgot Password',
+        'email' => 'Email',
+        'sending' => 'Sending...',
+        'send_link' => 'Email Password Reset Link',
+        'remember_password' => 'Remember your password?',
+        'sign_in' => 'Sign in',
+        'email_placeholder' => 'Enter your email',
+    ],
+
+    'reset_password' => [
+        'title' => 'Reset your password',
+        'description' => 'Enter your email and new password to reset your password',
+        'page_title' => 'Reset Password',
+        'email' => 'Email',
+        'password' => 'Password',
+        'confirm_password' => 'Confirm Password',
+        'resetting' => 'Resetting...',
+        'reset_password' => 'Reset Password',
+        'email_placeholder' => 'Enter your email',
+        'password_placeholder' => 'Enter your new password',
+        'confirm_password_placeholder' => 'Confirm your new password',
+    ],
+
+    'confirm_password' => [
+        'title' => 'Confirm your password',
+        'description' => 'This is a secure area. Please confirm your password before continuing.',
+        'page_title' => 'Confirm Password',
+        'password' => 'Password',
+        'confirming' => 'Confirming...',
+        'confirm' => 'Confirm',
+        'password_placeholder' => 'Enter your password',
+    ],
+
+    'verify_email' => [
+        'title' => 'Verify your email',
+        'description' => 'Thanks for signing up! Please verify your email address by clicking on the link we just emailed to you.',
+        'page_title' => 'Email Verification',
+        'link_sent' => 'A new verification link has been sent to your email address.',
+        'sending' => 'Sending...',
+        'resend' => 'Resend Verification Email',
+        'logout' => 'Log Out',
+    ],
+
+];

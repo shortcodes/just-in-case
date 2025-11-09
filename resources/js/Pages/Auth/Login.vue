@@ -6,8 +6,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 import type { LoginPageProps } from '@/types/auth'
+import { useTrans } from '@/composables/useTrans'
 
 const props = defineProps<LoginPageProps>()
+const trans = useTrans()
 
 const form = useForm({
     email: '',
@@ -23,11 +25,11 @@ const submit = (): void => {
 </script>
 
 <template>
-    <Head title="Log in" />
+    <Head :title="trans('auth.login.page_title')" />
 
     <GuestLayout
-        title="Sign in"
-        description="Enter your email below to sign in to your account"
+        :title="trans('auth.login.title')"
+        :description="trans('auth.login.description')"
     >
         <div
             v-if="status"
@@ -39,12 +41,12 @@ const submit = (): void => {
         <form @submit.prevent="submit">
             <div class="grid gap-4">
                 <div class="grid gap-2">
-                    <Label for="email">Email</Label>
+                    <Label for="email">{{ trans('auth.login.email') }}</Label>
                     <Input
                         id="email"
                         type="email"
                         v-model="form.email"
-                        placeholder="Enter your email"
+                        :placeholder="trans('auth.login.email_placeholder')"
                         required
                         autofocus
                         autocomplete="email"
@@ -57,20 +59,20 @@ const submit = (): void => {
 
                 <div class="grid gap-2">
                     <div class="flex items-center">
-                        <Label for="password">Password</Label>
+                        <Label for="password">{{ trans('auth.login.password') }}</Label>
                         <Link
                             v-if="canResetPassword"
                             :href="route('password.request')"
                             class="ml-auto inline-block text-sm underline"
                         >
-                            Forgot your password?
+                            {{ trans('auth.login.forgot_password') }}
                         </Link>
                     </div>
                     <Input
                         id="password"
                         type="password"
                         v-model="form.password"
-                        placeholder="Enter your password"
+                        :placeholder="trans('auth.login.password_placeholder')"
                         required
                         autocomplete="current-password"
                         :disabled="form.processing"
@@ -90,7 +92,7 @@ const submit = (): void => {
                         for="remember"
                         class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Remember me
+                        {{ trans('auth.login.remember_me') }}
                     </Label>
                 </div>
 
@@ -100,19 +102,19 @@ const submit = (): void => {
                     class="w-full"
                     :disabled="form.processing"
                 >
-                    <span v-if="form.processing">Signing in...</span>
-                    <span v-else>Sign in</span>
+                    <span v-if="form.processing">{{ trans('auth.login.signing_in') }}</span>
+                    <span v-else>{{ trans('auth.login.sign_in') }}</span>
                 </Button>
             </div>
         </form>
 
         <div class="mt-4 text-center text-sm">
-            Don't have an account?
+            {{ trans('auth.login.no_account') }}
             <Link
                 :href="route('register')"
                 class="underline"
             >
-                Sign up
+                {{ trans('auth.login.sign_up') }}
             </Link>
         </div>
     </GuestLayout>

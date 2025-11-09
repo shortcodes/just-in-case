@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { Head, useForm } from '@inertiajs/vue3'
+import { useTrans } from '@/composables/useTrans'
+
+const trans = useTrans()
 
 const form = useForm({
     password: '',
@@ -18,20 +21,20 @@ const submit = (): void => {
 
 <template>
     <GuestLayout
-        title="Confirm your password"
-        description="This is a secure area. Please confirm your password before continuing."
+        :title="trans('auth.confirm_password.title')"
+        :description="trans('auth.confirm_password.description')"
     >
-        <Head title="Confirm Password" />
+        <Head :title="trans('auth.confirm_password.page_title')" />
 
         <form @submit.prevent="submit">
             <div class="grid gap-4">
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">{{ trans('auth.confirm_password.password') }}</Label>
                     <Input
                         id="password"
                         type="password"
                         v-model="form.password"
-                        placeholder="Enter your password"
+                        :placeholder="trans('auth.confirm_password.password_placeholder')"
                         required
                         autofocus
                         autocomplete="current-password"
@@ -48,8 +51,8 @@ const submit = (): void => {
                     class="w-full"
                     :disabled="form.processing"
                 >
-                    <span v-if="form.processing">Confirming...</span>
-                    <span v-else>Confirm</span>
+                    <span v-if="form.processing">{{ trans('auth.confirm_password.confirming') }}</span>
+                    <span v-else>{{ trans('auth.confirm_password.confirm') }}</span>
                 </Button>
             </div>
         </form>

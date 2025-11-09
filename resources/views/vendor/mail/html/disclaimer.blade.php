@@ -11,9 +11,9 @@
 <td class="disclaimer-column" width="50%" style="vertical-align: top; padding-left: 20px;">
 <h3 class="disclaimer-heading">{{ __('Resources') }}</h3>
 <p class="disclaimer-text"><a href="{{ $url ?? config('app.url') }}" class="disclaimer-link">{{ __('Visit Website') }}</a></p>
-<p class="disclaimer-text"><a href="{{ $url ?? config('app.url') }}/about" class="disclaimer-link">{{ __('About Us') }}</a></p>
-<p class="disclaimer-text"><a href="{{ $url ?? config('app.url') }}/privacy" class="disclaimer-link">{{ __('Privacy Policy') }}</a></p>
-<p class="disclaimer-text"><a href="{{ $url ?? config('app.url') }}/terms" class="disclaimer-link">{{ __('Terms of Service') }}</a></p>
+<p class="disclaimer-text"><a href="{{ route('legal.privacy.' . app()->getLocale()) }}" class="disclaimer-link">{{ __('Privacy Policy') }}</a></p>
+<p class="disclaimer-text"><a href="{{ route('legal.terms.' . app()->getLocale()) }}" class="disclaimer-link">{{ __('Terms of Service') }}</a></p>
+<p class="disclaimer-text"><a href="{{ route('legal.disclaimer.' . app()->getLocale()) }}" class="disclaimer-link">{{ __('Legal Disclaimer') }}</a></p>
 </td>
 </tr>
 </table>

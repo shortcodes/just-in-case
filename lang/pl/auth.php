@@ -1,0 +1,91 @@
+<?php
+
+return [
+
+    'login' => [
+        'title' => 'Zaloguj się',
+        'description' => 'Wprowadź swój adres e-mail, aby zalogować się na swoje konto',
+        'page_title' => 'Logowanie',
+        'email' => 'E-mail',
+        'password' => 'Hasło',
+        'forgot_password' => 'Zapomniałeś hasła?',
+        'remember_me' => 'Zapamiętaj mnie',
+        'signing_in' => 'Logowanie...',
+        'sign_in' => 'Zaloguj się',
+        'no_account' => 'Nie masz konta?',
+        'sign_up' => 'Zarejestruj się',
+        'email_placeholder' => 'Wprowadź swój e-mail',
+        'password_placeholder' => 'Wprowadź swoje hasło',
+    ],
+
+    'register' => [
+        'title' => 'Utwórz konto',
+        'description' => 'Wprowadź swoje dane, aby utworzyć konto',
+        'page_title' => 'Utwórz konto',
+        'name' => 'Imię i nazwisko',
+        'email' => 'E-mail',
+        'password' => 'Hasło',
+        'confirm_password' => 'Potwierdź hasło',
+        'creating_account' => 'Tworzenie konta...',
+        'create_account' => 'Utwórz konto',
+        'have_account' => 'Masz już konto?',
+        'sign_in' => 'Zaloguj się',
+        'name_placeholder' => 'Wprowadź swoje imię i nazwisko',
+        'email_placeholder' => 'Wprowadź swój e-mail',
+        'password_placeholder' => 'Wprowadź hasło',
+        'confirm_password_placeholder' => 'Potwierdź hasło',
+        'terms_prefix' => 'Przeczytałem i akceptuję',
+        'privacy_policy' => 'Politykę prywatności',
+        'and' => 'oraz',
+        'terms_of_service' => 'Warunki użytkowania',
+        'not_testament' => 'Rozumiem, że Just In Case <strong>NIE JEST testamentem prawnym</strong> ani usługą prawną',
+        'read_disclaimer' => 'przeczytaj oświadczenie',
+    ],
+
+    'forgot_password' => [
+        'title' => 'Zapomniałeś hasła?',
+        'description' => 'Nie ma problemu. Po prostu podaj swój adres e-mail, a wyślemy Ci link do resetowania hasła.',
+        'page_title' => 'Zapomniałem hasła',
+        'email' => 'E-mail',
+        'sending' => 'Wysyłanie...',
+        'send_link' => 'Wyślij link do resetowania hasła',
+        'remember_password' => 'Pamiętasz hasło?',
+        'sign_in' => 'Zaloguj się',
+        'email_placeholder' => 'Wprowadź swój e-mail',
+    ],
+
+    'reset_password' => [
+        'title' => 'Resetuj hasło',
+        'description' => 'Wprowadź swój e-mail i nowe hasło, aby zresetować hasło',
+        'page_title' => 'Resetowanie hasła',
+        'email' => 'E-mail',
+        'password' => 'Hasło',
+        'confirm_password' => 'Potwierdź hasło',
+        'resetting' => 'Resetowanie...',
+        'reset_password' => 'Zresetuj hasło',
+        'email_placeholder' => 'Wprowadź swój e-mail',
+        'password_placeholder' => 'Wprowadź nowe hasło',
+        'confirm_password_placeholder' => 'Potwierdź nowe hasło',
+    ],
+
+    'confirm_password' => [
+        'title' => 'Potwierdź hasło',
+        'description' => 'To jest chroniony obszar. Potwierdź swoje hasło przed kontynuowaniem.',
+        'page_title' => 'Potwierdź hasło',
+        'password' => 'Hasło',
+        'confirming' => 'Potwierdzanie...',
+        'confirm' => 'Potwierdź',
+        'password_placeholder' => 'Wprowadź swoje hasło',
+    ],
+
+    'verify_email' => [
+        'title' => 'Zweryfikuj swój e-mail',
+        'description' => 'Dziękujemy za rejestrację! Zweryfikuj swój adres e-mail, klikając w link, który właśnie wysłaliśmy.',
+        'page_title' => 'Weryfikacja e-mail',
+        'link_sent' => 'Nowy link weryfikacyjny został wysłany na Twój adres e-mail.',
+        'sending' => 'Wysyłanie...',
+        'resend' => 'Wyślij ponownie e-mail weryfikacyjny',
+        'logout' => 'Wyloguj się',
+    ],
+
+];

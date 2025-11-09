@@ -32,21 +32,24 @@ class CustodianshipOwnerAlert extends Notification implements ShouldQueue
         $appName = config('app.name');
 
         $subject = match ($this->type) {
-            'bounced' => "{$appName} - Email Bounced",
-            'failed' => "{$appName} - Delivery Failed",
-            default => "{$appName} - Delivery Alert",
+            'bounced' => __('notifications.custodianship_owner_alert.subject_bounced', ['appName' => $appName]),
+            'failed' => __('notifications.custodianship_owner_alert.subject_failed', ['appName' => $appName]),
+            default => __('notifications.custodianship_owner_alert.subject_default', ['appName' => $appName]),
         };
 
         $message = (new MailMessage)
             ->subject($subject)
             ->error()
-            ->greeting('Delivery Problem for Your Custodianship')
-            ->line("The message for your custodianship '{$this->custodianship->name}' was not delivered to {$this->delivery->recipient_email}.")
+            ->greeting(__('notifications.custodianship_owner_alert.greeting'))
+            ->line(__('notifications.custodianship_owner_alert.not_delivered', [
+                'custodianshipName' => $this->custodianship->name,
+                'recipientEmail' => $this->delivery->recipient_email,
+            ]))
             ->line('')
-            ->line("Reason: {$this->errorMessage}")
+            ->line(__('notifications.custodianship_owner_alert.reason', ['errorMessage' => $this->errorMessage]))
             ->line('')
-            ->line('Please check the recipient email address and update your custodianship if needed.')
-            ->action('View Custodianship', route('custodianships.show', $this->custodianship));
+            ->line(__('notifications.custodianship_owner_alert.check_email'))
+            ->action(__('notifications.custodianship_owner_alert.view_button'), route('custodianships.show', $this->custodianship));
 
         return $message;
     }

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { Head, useForm } from '@inertiajs/vue3'
+import { useTrans } from '@/composables/useTrans'
 
 interface Props {
     email: string
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const trans = useTrans()
 
 const form = useForm({
     token: props.token,
@@ -28,20 +30,20 @@ const submit = (): void => {
 
 <template>
     <GuestLayout
-        title="Reset your password"
-        description="Enter your email and new password to reset your password"
+        :title="trans('auth.reset_password.title')"
+        :description="trans('auth.reset_password.description')"
     >
-        <Head title="Reset Password" />
+        <Head :title="trans('auth.reset_password.page_title')" />
 
         <form @submit.prevent="submit">
             <div class="grid gap-4">
                 <div class="grid gap-2">
-                    <Label for="email">Email</Label>
+                    <Label for="email">{{ trans('auth.reset_password.email') }}</Label>
                     <Input
                         id="email"
                         type="email"
                         v-model="form.email"
-                        placeholder="Enter your email"
+                        :placeholder="trans('auth.reset_password.email_placeholder')"
                         required
                         autofocus
                         autocomplete="email"
@@ -53,12 +55,12 @@ const submit = (): void => {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">{{ trans('auth.reset_password.password') }}</Label>
                     <Input
                         id="password"
                         type="password"
                         v-model="form.password"
-                        placeholder="Enter your new password"
+                        :placeholder="trans('auth.reset_password.password_placeholder')"
                         required
                         autocomplete="new-password"
                         :disabled="form.processing"
@@ -70,12 +72,12 @@ const submit = (): void => {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm Password</Label>
+                    <Label for="password_confirmation">{{ trans('auth.reset_password.confirm_password') }}</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
                         v-model="form.password_confirmation"
-                        placeholder="Confirm your new password"
+                        :placeholder="trans('auth.reset_password.confirm_password_placeholder')"
                         required
                         autocomplete="new-password"
                         :disabled="form.processing"
@@ -92,8 +94,8 @@ const submit = (): void => {
                     class="w-full"
                     :disabled="form.processing"
                 >
-                    <span v-if="form.processing">Resetting...</span>
-                    <span v-else>Reset Password</span>
+                    <span v-if="form.processing">{{ trans('auth.reset_password.resetting') }}</span>
+                    <span v-else>{{ trans('auth.reset_password.reset_password') }}</span>
                 </Button>
             </div>
         </form>

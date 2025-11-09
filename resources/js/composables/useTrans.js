@@ -21,7 +21,7 @@ export function useTrans() {
             }
         }
 
-        return typeof value === 'string' ? value : key;
+        return value !== undefined && value !== null ? value : key;
     };
 }
 

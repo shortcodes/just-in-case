@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivateCustodianshipController;
 use App\Http\Controllers\CustodianshipAttachmentController;
 use App\Http\Controllers\CustodianshipController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\PreviewCustodianshipMailController;
 use App\Http\Controllers\ProfileController;
@@ -23,6 +24,13 @@ Route::get('/', function () {
 Route::get('/custodianships/{custodianship}/download', [CustodianshipAttachmentController::class, 'downloadAll'])->name('custodianships.download');
 
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle'])->name('webhooks.mailgun');
+
+Route::get('/privacy-policy', [LegalController::class, 'privacyPolicy'])->name('legal.privacy.en');
+Route::get('/polityka-prywatnosci', [LegalController::class, 'privacyPolicyPl'])->name('legal.privacy.pl');
+Route::get('/terms-of-service', [LegalController::class, 'termsOfService'])->name('legal.terms.en');
+Route::get('/regulamin', [LegalController::class, 'termsOfServicePl'])->name('legal.terms.pl');
+Route::get('/legal-disclaimer', [LegalController::class, 'legalDisclaimer'])->name('legal.disclaimer.en');
+Route::get('/zastrzezenia-prawne', [LegalController::class, 'legalDisclaimerPl'])->name('legal.disclaimer.pl');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -36,6 +36,36 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
+      - name: Create .env from variables
+        run: |
+          declare -A seen
+          while IFS= read -r line; do
+            # Skip empty lines and comments
+            if [ -z "$line" ] || [[ "$line" =~ ^[[:space:]]*# ]]; then
+              echo "$line"
+              continue
+            fi
+
+            # Extract variable name
+            variableKey="${line%%=*}"
+
+            # Skip if we've already seen this variable (use first occurrence only)
+            if [[ -n "${seen[$variableKey]}" ]]; then
+              continue
+            fi
+            seen[$variableKey]=1
+
+            # Get value from environment variable
+            value="${!variableKey}"
+
+            # Use environment value if set, otherwise use value from .env.example
+            if [ -n "$value" ]; then
+              echo "${variableKey}=${value}"
+            else
+              echo "$line"
+            fi
+          done < .env.example > .env
+
       - name: Create deployment artifact
         run: |
           tar -czf ../deployment.tar.gz \
@@ -47,7 +77,6 @@ jobs:
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*' \
             --exclude='storage/logs/*' \
-            --exclude='.env' \
             .
           mv ../deployment.tar.gz ./
 
@@ -138,41 +167,6 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
             rm -rf ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}/storage
             ln -s ${{ env.DEPLOY_DESTINATION }}/shared/storage ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}/storage
-          EOF
-
-      - name: Create .env file for release
-        run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
-            cat > ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}/.env << 'ENVEOF'
-          APP_NAME="${{ env.APP_NAME }}"
-          APP_ENV=${{ env.APP_ENV }}
-          APP_KEY=${{ secrets.APP_KEY }}
-          APP_DEBUG=${{ env.APP_DEBUG }}
-          APP_URL=${{ env.APP_URL }}
-
-          DB_CONNECTION=mysql
-          DB_HOST=${{ env.DB_HOST }}
-          DB_PORT=3306
-          DB_DATABASE=${{ env.DB_DATABASE }}
-          DB_USERNAME=${{ env.DB_USERNAME }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-
-          CACHE_STORE=file
-          FILESYSTEM_DISK=s3
-          QUEUE_CONNECTION=sync
-          SESSION_DRIVER=file
-          SESSION_LIFETIME=120
-
-          MAIL_MAILER=${{ env.MAIL_MAILER }}
-          MAILGUN_DOMAIN=${{ env.MAILGUN_DOMAIN }}
-          MAILGUN_SECRET=${{ secrets.MAILGUN_SECRET }}
-
-          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }}
-          AWS_BUCKET=${{ env.AWS_BUCKET }}
-          AWS_ENDPOINT=${{ env.AWS_ENDPOINT }}
-          ENVEOF
           EOF
 
       - name: Run database migrations

@@ -29,6 +29,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       MAILGUN_SECRET: ${{ secrets.MAILGUN_SECRET }}
+      MAILGUN_WEBHOOK_SIGNING_KEY: ${{ secrets.MAILGUN_WEBHOOK_SIGNING_KEY }}
 
     steps:
       - name: Checkout code

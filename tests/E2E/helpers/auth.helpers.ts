@@ -45,22 +45,13 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Create user without password, then update it using the model
-  // This ensures the password gets hashed by the model's 'hashed' cast
-  const user = await laravel.factory('App\\Models\\User', {
+  // Use factory but let it use default password from factory definition
+  // The factory uses Hash::make('password') which creates a fresh hash
+  return await laravel.factory('App\\Models\\User', {
     name: credentials.name,
     email: credentials.email,
     email_verified_at: new Date().toISOString()
   });
-
-  // Update password using model to trigger the hashed cast
-  await laravel.callFunction(`
-    $user = \\App\\Models\\User::find(${user.id});
-    $user->password = '${credentials.password}';
-    return $user->save();
-  `);
-
-  return user;
 }
 
 export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Promise<any> {

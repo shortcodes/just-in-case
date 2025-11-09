@@ -45,14 +45,24 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Pass a static, known password hash to ensure consistency across test runs
+  // Create user directly via query to bypass model's password hashing cast
   // This is the bcrypt hash for 'password' with cost=10
-  return await laravel.factory('App\\Models\\User', {
-    name: credentials.name,
-    email: credentials.email,
-    password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    email_verified_at: new Date().toISOString()
-  });
+  const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  await laravel.query(
+    'INSERT INTO users (name, email, password, email_verified_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [
+      credentials.name,
+      credentials.email,
+      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+      now,
+      now,
+      now
+    ]
+  );
+
+  // Retrieve the created user
+  const users = await laravel.query('SELECT id, name, email FROM users WHERE email = ?', [credentials.email]);
+  return users[0];
 }
 
 export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Promise<any> {

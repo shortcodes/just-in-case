@@ -138,6 +138,13 @@ jobs:
           chmod 664 database/database.sqlite
           chmod 775 database
 
+      - name: Ensure storage directories exist
+        run: |
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/views
+          chmod -R 775 storage
+
       - name: Generate application key
         run: php artisan key:generate
 

@@ -45,24 +45,22 @@ export async function createAuthenticatedUser(
     password: 'password'
   }
 ): Promise<any> {
-  // Create user directly via query to bypass model's password hashing cast
-  // This is the bcrypt hash for 'password' with cost=10
-  const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  // Create user via factory without password, then update with static hash
+  // This avoids the model's 'hashed' cast double-hashing
+  const user = await laravel.factory('App\\Models\\User', {
+    name: credentials.name,
+    email: credentials.email,
+    email_verified_at: new Date().toISOString()
+  });
+
+  // Update password with static bcrypt hash to bypass model's cast
+  // This is the hash for 'password' with cost=10
   await laravel.query(
-    'INSERT INTO users (name, email, password, email_verified_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [
-      credentials.name,
-      credentials.email,
-      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-      now,
-      now,
-      now
-    ]
+    'UPDATE users SET password = ? WHERE id = ?',
+    ['$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', user.id]
   );
 
-  // Retrieve the created user
-  const users = await laravel.query('SELECT id, name, email FROM users WHERE email = ?', [credentials.email]);
-  return users[0];
+  return user;
 }
 
 export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Promise<any> {

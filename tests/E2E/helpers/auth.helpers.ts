@@ -99,6 +99,12 @@ export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Pro
     // Verify user exists in database
     const dbUser = await laravel.select(`SELECT id, email, password FROM users WHERE email = '${user.email}'`);
     console.log(`User in database: ${JSON.stringify(dbUser)}`);
+
+    // Test if password hash matches
+    const passwordCheck = await laravel.callFunction(
+      `return \\Illuminate\\Support\\Facades\\Hash::check('password', '${dbUser[0].password}');`
+    );
+    console.log(`Password check result: ${passwordCheck}`);
   }
 
   await loginUser(page, {

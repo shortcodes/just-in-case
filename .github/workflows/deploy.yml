@@ -22,6 +22,7 @@ jobs:
       DB_HOST: ${{vars.DB_HOST }}
       DB_USERNAME: ${{vars.DB_USERNAME }}
       MAILGUN_DOMAIN: ${{vars.MAILGUN_DOMAIN }}
+      MAIL_FROM_ADDRESS: ${{vars.MAIL_FROM_ADDRESS }}
       MAIL_MAILER: ${{vars.MAIL_MAILER }}
 
       APP_KEY: ${{ secrets.APP_KEY }}

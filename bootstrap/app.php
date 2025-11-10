@@ -44,6 +44,9 @@ return Application::configure(basePath: dirname(__DIR__))
         )->everyMinute()
             ->withoutOverlapping();
 
+        $schedule->command(
+            'nightwatch:agent'
+        )->everyMinute()->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

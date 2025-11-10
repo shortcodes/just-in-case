@@ -33,6 +33,7 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       MAILGUN_SECRET: ${{ secrets.MAILGUN_SECRET }}
       MAILGUN_WEBHOOK_SIGNING_KEY: ${{ secrets.MAILGUN_WEBHOOK_SIGNING_KEY }}
+      NIGHTWATCH_TOKEN: ${{secrets.NIGHTWATCH_TOKEN }}
 
     steps:
       - name: Checkout code

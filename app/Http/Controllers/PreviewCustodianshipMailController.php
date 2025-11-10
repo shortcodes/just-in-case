@@ -19,6 +19,9 @@ class PreviewCustodianshipMailController extends Controller
             'name' => 'Recipient Name',
         ]);
 
+        $locale = $request->query('locale', app()->getLocale());
+        app()->setLocale($locale);
+
         $notification = new ExpiredCustodianshipNotification($custodianship, $recipient);
 
         $mailMessage = $notification->toMail($recipient);

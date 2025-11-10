@@ -34,8 +34,16 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'terms_accepted' => 'required|accepted',
-            'not_testament_acknowledged' => 'required|accepted',
+            'terms_accepted' => ['required', function ($attribute, $value, $fail) {
+                if (! in_array($value, [true, 'true', 1, '1', 'on', 'yes'], true)) {
+                    $fail(__('validation.accepted', ['attribute' => __('validation.attributes.terms_accepted')]));
+                }
+            }],
+            'not_testament_acknowledged' => ['required', function ($attribute, $value, $fail) {
+                if (! in_array($value, [true, 'true', 1, '1', 'on', 'yes'], true)) {
+                    $fail(__('validation.accepted', ['attribute' => __('validation.attributes.not_testament_acknowledged')]));
+                }
+            }],
         ]);
 
         $user = User::create([

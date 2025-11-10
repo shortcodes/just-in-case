@@ -17,6 +17,9 @@ test.describe('User Registration', () => {
     await page.fill('#password', 'password123');
     await page.fill('#password_confirmation', 'password123');
 
+    await page.check('#terms_accepted');
+    await page.check('#not_testament_acknowledged');
+
     await page.click('button[type="submit"]');
 
     await expect(page).toHaveURL('/custodianships');
@@ -34,8 +37,41 @@ test.describe('User Registration', () => {
     await page.fill('#password', 'password123');
     await page.fill('#password_confirmation', 'password123');
 
+    await page.check('#terms_accepted');
+    await page.check('#not_testament_acknowledged');
+
     await page.click('button[type="submit"]');
 
-    await expect(page.locator('#app').getByText('The email has already been taken')).toBeVisible();
+    await expect(page.locator('#app').getByText('The email address has already been taken')).toBeVisible();
+  });
+
+  test('user cannot register without accepting terms', async ({ page }) => {
+    await page.goto('/register');
+
+    await page.fill('#name', 'Test User');
+    await page.fill('#email', 'test2@example.com');
+    await page.fill('#password', 'password123');
+    await page.fill('#password_confirmation', 'password123');
+
+    await page.check('#not_testament_acknowledged');
+
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('#app').getByText('terms and conditions', { exact: false })).toBeVisible();
+  });
+
+  test('user cannot register without acknowledging legal disclaimer', async ({ page }) => {
+    await page.goto('/register');
+
+    await page.fill('#name', 'Test User');
+    await page.fill('#email', 'test3@example.com');
+    await page.fill('#password', 'password123');
+    await page.fill('#password_confirmation', 'password123');
+
+    await page.check('#terms_accepted');
+
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('#app').getByText('legal disclaimer', { exact: false })).toBeVisible();
   });
 });

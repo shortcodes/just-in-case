@@ -90,8 +90,6 @@ class PreviewCustodianshipMailTest extends TestCase
 
     public function test_preview_uses_polish_translations(): void
     {
-        app()->setLocale('pl');
-
         $user = User::factory()->create(['name' => 'Jan Kowalski']);
         $custodianship = Custodianship::factory()->for($user)->create();
 
@@ -99,7 +97,10 @@ class PreviewCustodianshipMailTest extends TestCase
             'content' => 'Testowa wiadomość',
         ]);
 
-        $response = $this->actingAs($user)->get(route('custodianships.preview', $custodianship));
+        $response = $this->actingAs($user)->get(route('custodianships.preview', [
+            'custodianship' => $custodianship,
+            'locale' => 'pl',
+        ]));
 
         $response->assertOk();
         $response->assertSee('Jan Kowalski');

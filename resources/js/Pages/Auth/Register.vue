@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
@@ -108,11 +107,12 @@ const submit = (): void => {
 
                 <div class="grid gap-4 pt-2">
                     <div class="flex items-start space-x-2">
-                        <Checkbox
+                        <input
+                            type="checkbox"
                             id="terms_accepted"
-                            :checked="form.terms_accepted"
-                            @update:checked="(value: boolean) => form.terms_accepted = value"
+                            v-model="form.terms_accepted"
                             :disabled="form.processing"
+                            class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-0.5"
                         />
                         <Label
                             for="terms_accepted"
@@ -141,11 +141,12 @@ const submit = (): void => {
                     </p>
 
                     <div class="flex items-start space-x-2">
-                        <Checkbox
+                        <input
+                            type="checkbox"
                             id="not_testament_acknowledged"
-                            :checked="form.not_testament_acknowledged"
-                            @update:checked="(value: boolean) => form.not_testament_acknowledged = value"
+                            v-model="form.not_testament_acknowledged"
                             :disabled="form.processing"
+                            class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-0.5"
                         />
                         <Label
                             for="not_testament_acknowledged"

@@ -16,6 +16,8 @@ export default defineConfig<LaravelOptions>({
     screenshot: 'only-on-failure',
     laravelEnv: {
       APP_LOCALE: 'en',
+      DB_CONNECTION: 'sqlite',
+      DB_DATABASE: '/var/www/html/database/e2e.sqlite',
     },
   },
 

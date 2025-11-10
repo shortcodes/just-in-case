@@ -17,6 +17,9 @@ export async function registerUser(page: Page, credentials: UserCredentials): Pr
   await page.fill('#password', credentials.password);
   await page.fill('#password_confirmation', credentials.password);
 
+  await page.check('#terms_accepted');
+  await page.check('#not_testament_acknowledged');
+
   const navigationPromise = page.waitForURL(/\/custodianships|\/dashboard/);
   await page.click('button[type="submit"]');
   await navigationPromise;
@@ -73,5 +76,6 @@ export async function loginAsUser(page: Page, laravel: Laravel, user?: any): Pro
 }
 
 export async function verifyUserEmail(laravel: Laravel, email: string): Promise<void> {
-  await laravel.query("UPDATE users SET email_verified_at = datetime('now') WHERE email = ?", [email]);
+  const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  await laravel.query("UPDATE users SET email_verified_at = ? WHERE email = ?", [now, email]);
 }

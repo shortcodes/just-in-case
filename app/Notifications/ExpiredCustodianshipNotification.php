@@ -27,8 +27,7 @@ class ExpiredCustodianshipNotification extends Notification implements ShouldQue
     public function __construct(
         public Custodianship $custodianship,
         public Recipient $recipient
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

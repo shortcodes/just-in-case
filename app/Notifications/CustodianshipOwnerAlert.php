@@ -18,8 +18,7 @@ class CustodianshipOwnerAlert extends Notification implements ShouldQueue
         public Delivery $delivery,
         public string $type,
         public string $errorMessage
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

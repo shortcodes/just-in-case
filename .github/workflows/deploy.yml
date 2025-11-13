@@ -181,23 +181,23 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
             cd ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}
-            php artisan migrate --force
+            /usr/bin/php-8.3 artisan migrate --force
           EOF
 
       - name: Create storage link
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
             cd ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}
-            php artisan storage:link
+            /usr/bin/php-8.3 artisan storage:link
           EOF
 
       - name: Optimize Laravel
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
             cd ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            /usr/bin/php-8.3 artisan config:cache
+            /usr/bin/php-8.3 artisan route:cache
+            /usr/bin/php-8.3 artisan view:cache
           EOF
 
       - name: Activate new release
@@ -214,7 +214,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.DEPLOY_SSH_PORT }} ${{ env.DEPLOY_SSH_USER }}@${{ env.DEPLOY_SSH_HOST }} << 'EOF'
             cd ${{ env.DEPLOY_DESTINATION }}/releases/${{ env.RELEASE_NAME }}
-            php artisan queue:restart
+            /usr/bin/php-8.3 artisan queue:restart
           EOF
 
       - name: Clean old releases

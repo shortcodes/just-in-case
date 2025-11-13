@@ -40,13 +40,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
 
         $schedule->command(
-            'queue:work database --queue=notifications --tries=3 --stop-when-empty --max-time=50'
+            'queue:work database --tries=3 --stop-when-empty --max-time=50'
         )->everyMinute()
-            ->withoutOverlapping();
+            ->withoutOverlapping()->runInBackground();
 
         $schedule->command(
             'nightwatch:agent'
-        )->everyMinute()->withoutOverlapping();
+        )->everyMinute()->withoutOverlapping()->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -126,17 +126,6 @@ class SendCustodianshipNotificationJobTest extends TestCase
         );
     }
 
-    public function test_job_uses_notifications_queue(): void
-    {
-        $user = User::factory()->create();
-        $custodianship = Custodianship::factory()->completed()->create(['user_id' => $user->id]);
-        $recipient = Recipient::factory()->for($custodianship)->create();
-
-        $job = new SendCustodianshipNotificationJob($custodianship, $recipient);
-
-        $this->assertEquals('notifications', $job->queue);
-    }
-
     public function test_job_generates_valid_mailgun_message_id(): void
     {
         config(['mail.mailers.mailgun.domain' => 'mg.example.com']);

@@ -18,9 +18,7 @@ class SendCustodianshipNotificationJob implements ShouldQueue
         public Custodianship $custodianship,
         public Recipient $recipient,
         public int $attemptNumber = 1
-    ) {
-        $this->onQueue('notifications');
-    }
+    ) {}
 
     public function handle(): void
     {

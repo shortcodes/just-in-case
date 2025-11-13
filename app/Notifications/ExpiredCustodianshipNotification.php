@@ -28,7 +28,6 @@ class ExpiredCustodianshipNotification extends Notification implements ShouldQue
         public Custodianship $custodianship,
         public Recipient $recipient
     ) {
-        $this->onQueue('notifications');
     }
 
     public function via(object $notifiable): array

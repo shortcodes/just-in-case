@@ -19,7 +19,6 @@ class CustodianshipOwnerAlert extends Notification implements ShouldQueue
         public string $type,
         public string $errorMessage
     ) {
-        $this->onQueue('notifications');
     }
 
     public function via(object $notifiable): array
